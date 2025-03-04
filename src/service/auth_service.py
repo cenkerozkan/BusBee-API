@@ -1,14 +1,20 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+from pprint import pprint
 
 from ..common.meta.singleton_meta import SingletonMeta
-from ..common.firebase.firebase_handler import AuthHandler
+from ..common.firebase.firebase_handler import FirebaseHandler
 from ..common.response_model.response_model import ResponseModel
 
 
+# TODO: After finishing firebase auth,
+#       look up for email verification
+#       and password reset
+
+# TODO: Do not forget to implement mongodb hashing.
 class AuthService(metaclass=SingletonMeta):
     def __init__(self):
-        self._auth_handler = AuthHandler()
+        self._auth_handler = FirebaseHandler()
 
     def login(
             self,
@@ -16,14 +22,36 @@ class AuthService(metaclass=SingletonMeta):
             password: str
     ) -> dict:
         result: dict = {
+            "code": 0,
+            "success": False,
             "message": "",
             "token": "",
-            "error": ""
+            "error": "",
+            "data": {}
         }
         try:
-            token:str = self._auth_handler.login(email, password)
-            result.update({"message": "Login successful", "token": f"{token}"})
+            response:dict = self._auth_handler.login(email, password)
+            pprint(response)
+            if "error" in response:
+                result.update(
+                    {
+                        "code": response.get("error").get("code"),
+                        "success": False,
+                        "message": response.get("error").get("errors")[0].get("message"),
+                    }
+                )
+            else:
+                result.update(
+                    {
+                        "code": 200,
+                        "success": True,
+                        "message": "Login successful",
+                        "token": response.get("refreshToken"),
+                    }
+                )
+
             return result
+
         except Exception as e:
             result.update({"message": "Login failed", "error": str(e)})
             return result
@@ -33,5 +61,26 @@ class AuthService(metaclass=SingletonMeta):
             self,
             email: str,
             password: str
-    ) -> str:
-        return self._auth_handler.register(email, password)
+    ) -> dict:
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": ""
+        }
+        try:
+            response:dict = self._auth_handler.register(email, password)
+            pprint(response)
+            if "error" in response:
+                result.update(
+                    {
+                        "code": response.get("error").get("code"),
+                        "success": False,
+                        "message": response.get("error").get("errors")[0].get("message"),
+                    }
+                )
+            return result
+
+        except Exception as e:
+            result.update({"message": "Registration failed", "error": str(e)})
+            return result

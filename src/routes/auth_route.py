@@ -21,6 +21,7 @@ def login(
     if not re.match(email_pattern, user_data.email):
         return JSONResponse(
             status_code=400,
+            headers={},
             content=ResponseModel(
                 success=False,
                 message="Invalid email format",
@@ -31,10 +32,10 @@ def login(
 
     login_result:dict = _auth_service.login(user_data.email, user_data.password)
     return JSONResponse(
-        status_code=200,
+        status_code=400,
         headers={"Authorization": login_result.get("token")},
         content=ResponseModel(
-            success=True,
+            success=login_result.get("success"),
             message=login_result.get("message"),
             data={},
             error=login_result.get("error")
