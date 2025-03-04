@@ -15,7 +15,7 @@ import os
 
 class FirebaseHandler(metaclass=SingletonMeta):
     def __init__(self):
-        self.cred: credentials.Certificate = credentials.Certificate(
+        self._cred: credentials.Certificate = credentials.Certificate(
             {
                 "type": os.getenv("TYPE"),
                 "project_id": os.getenv("PROJECT_ID"),
@@ -30,7 +30,7 @@ class FirebaseHandler(metaclass=SingletonMeta):
                 "universe_domain": os.getenv("UNIVERSE_DOMAIN"),
             }
         )
-        self.app = firebase_admin.initialize_app(self.cred)
+        self._app = firebase_admin.initialize_app(self._cred)
         self._api_key = os.getenv("WEB_API_KEY")
 
     def _request_executor(
@@ -62,5 +62,14 @@ class FirebaseHandler(metaclass=SingletonMeta):
         response = self._request_executor(email, password, "signUp")
         return response
 
-    def validate_token(self):
-        pass
+    def validate_token(
+            self,
+            token: str
+    ) -> bool:
+        try:
+            decoded_token = auth.verify_id_token(token)
+            return True
+        except (auth.InvalidIdTokenError, auth.ExpiredIdTokenError, auth.RevokedIdTokenError):
+            return False
+        except Exception:
+            return False

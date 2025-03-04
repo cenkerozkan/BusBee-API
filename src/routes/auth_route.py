@@ -12,8 +12,7 @@ auth_router = APIRouter(prefix="/firebase")
 
 @auth_router.post("/login", tags=["Auth"])
 def login(
-        user_data: LoginRequest,
-        response: Response
+        user_data: LoginRequest
 ) -> JSONResponse:
     _auth_service = AuthService()
 
@@ -32,8 +31,9 @@ def login(
 
     login_result:dict = _auth_service.login(user_data.email, user_data.password)
     return JSONResponse(
-        status_code=400,
-        headers={"Authorization": login_result.get("token")},
+        status_code=login_result.get("code"),
+        headers={"refresh_token": login_result.get("refresh_token"),
+                 "id_token": login_result.get("id_token")},
         content=ResponseModel(
             success=login_result.get("success"),
             message=login_result.get("message"),
@@ -43,7 +43,9 @@ def login(
     )
 
 @auth_router.post("/register", tags=["Auth"])
-def register(user_data: LoginRequest):
+def register(
+        user_data: LoginRequest
+) -> JSONResponse:
     _auth_service = AuthService()
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
@@ -57,4 +59,26 @@ def register(user_data: LoginRequest):
             ).model_dump()
         )
 
-    _auth_service.register(user_data.email, user_data.password)
+    register_result:dict = _auth_service.register(user_data.email, user_data.password)
+    return JSONResponse(
+        status_code=register_result.get("code"),
+        headers={"refresh_token": register_result.get("refresh_token"),
+                 "id_token": register_result.get("id_token")},
+        content=ResponseModel(
+            success=register_result.get("success"),
+            message=register_result.get("message"),
+            data={},
+            error=register_result.get("error")
+        ).model_dump()
+    )
+
+
+@auth_router.post("/logout", tags=["Auth"])
+def logout():
+    pass
+
+
+@auth_router.post("/validate_token", tags=["Auth"])
+def validate_token(user_data: ValidateRequest):
+    _auth_service = AuthService()
+    return _auth_service.validate_token(user_data.refresh_token)

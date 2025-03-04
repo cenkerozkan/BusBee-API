@@ -25,7 +25,8 @@ class AuthService(metaclass=SingletonMeta):
             "code": 0,
             "success": False,
             "message": "",
-            "token": "",
+            "refresh_token": "",
+            "id_token":"",
             "error": "",
             "data": {}
         }
@@ -46,14 +47,22 @@ class AuthService(metaclass=SingletonMeta):
                         "code": 200,
                         "success": True,
                         "message": "Login successful",
-                        "token": response.get("refreshToken"),
+                        "refresh_token": response.get("refreshToken"),
+                        "id_token": response.get("idToken"),
                     }
                 )
 
             return result
 
         except Exception as e:
-            result.update({"message": "Login failed", "error": str(e)})
+            result.update(
+                {
+                    "code": 500,
+                    "success": False,
+                    "message": "Login failed",
+                    "error": str(e)
+                }
+            )
             return result
 
 
@@ -66,7 +75,10 @@ class AuthService(metaclass=SingletonMeta):
             "code": 0,
             "success": False,
             "message": "",
-            "error": ""
+            "refresh_token": "",
+            "id_token": "",
+            "error": "",
+            "data": {}
         }
         try:
             response:dict = self._auth_handler.register(email, password)
@@ -79,8 +91,25 @@ class AuthService(metaclass=SingletonMeta):
                         "message": response.get("error").get("errors")[0].get("message"),
                     }
                 )
+            else:
+                result.update(
+                    {
+                        "code": 200,
+                        "success": True,
+                        "message": "Registration successful",
+                        "refresh_token": response.get("refreshToken"),
+                        "id_token": response.get("idToken"),
+                    }
+                )
             return result
 
         except Exception as e:
             result.update({"message": "Registration failed", "error": str(e)})
             return result
+
+    def validate_token(
+            self,
+            token: str
+    ) -> bool:
+        result: bool = self._auth_handler.validate_token(token)
+        return result

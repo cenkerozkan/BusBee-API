@@ -7,3 +7,6 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     email: str
     password: str
+
+class ValidateRequest(BaseModel):
+    refresh_token: str
