@@ -30,8 +30,8 @@ class FirebaseHandler(metaclass=SingletonMeta):
                 "universe_domain": os.getenv("UNIVERSE_DOMAIN"),
             }
         )
-        self._app = firebase_admin.initialize_app(self._cred)
-        self._api_key = os.getenv("WEB_API_KEY")
+        self._app: firebase_admin = firebase_admin.initialize_app(self._cred)
+        self._api_key: str = os.getenv("WEB_API_KEY")
 
     def _request_executor(
             self,
@@ -61,7 +61,7 @@ class FirebaseHandler(metaclass=SingletonMeta):
     ) -> dict:
         response = self._request_executor(email, password, "signUp")
         return response
-
+    
     def validate_token(
             self,
             token: str
