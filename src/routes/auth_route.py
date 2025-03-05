@@ -73,7 +73,6 @@ def register(
         ).model_dump()
     )
 
-
 @auth_router.post("/logout", tags=["Auth"])
 def logout(
         logout_data: LogoutRequest,
@@ -91,7 +90,6 @@ def logout(
             error=""
         ).model_dump()
     )
-
 
 @auth_router.post("/validate_token", tags=["Auth"])
 def validate_token(
