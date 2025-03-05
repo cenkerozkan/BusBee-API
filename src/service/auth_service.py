@@ -32,7 +32,6 @@ class AuthService(metaclass=SingletonMeta):
         }
         try:
             response:dict = self._auth_handler.login(email, password)
-            pprint(response)
             if "error" in response:
                 result.update(
                     {
@@ -42,6 +41,7 @@ class AuthService(metaclass=SingletonMeta):
                     }
                 )
             else:
+                user_info: dict = self._auth_handler.get_user_info(email)
                 result.update(
                     {
                         "code": 200,
@@ -49,6 +49,7 @@ class AuthService(metaclass=SingletonMeta):
                         "message": "Login successful",
                         "refresh_token": response.get("refreshToken"),
                         "id_token": response.get("idToken"),
+                        "data": user_info
                     }
                 )
 
@@ -64,7 +65,6 @@ class AuthService(metaclass=SingletonMeta):
                 }
             )
             return result
-
 
     def register(
             self,
@@ -82,7 +82,6 @@ class AuthService(metaclass=SingletonMeta):
         }
         try:
             response:dict = self._auth_handler.register(email, password)
-            pprint(response)
             if "error" in response:
                 result.update(
                     {
@@ -92,6 +91,7 @@ class AuthService(metaclass=SingletonMeta):
                     }
                 )
             else:
+                user_info: dict = self._auth_handler.get_user_info(email)
                 result.update(
                     {
                         "code": 200,
@@ -99,6 +99,7 @@ class AuthService(metaclass=SingletonMeta):
                         "message": "Registration successful",
                         "refresh_token": response.get("refreshToken"),
                         "id_token": response.get("idToken"),
+                        "data": user_info
                     }
                 )
             return result
@@ -106,6 +107,17 @@ class AuthService(metaclass=SingletonMeta):
         except Exception as e:
             result.update({"message": "Registration failed", "error": str(e)})
             return result
+
+    def logout(
+            self,
+            user_uid: str
+    ) -> bool:
+        try:
+            logout_result: bool = self._auth_handler.logout(user_uid)
+            return True
+        except Exception as e:
+            print("Error: ", e)
+            return False
 
     def validate_token(
             self,

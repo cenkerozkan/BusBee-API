@@ -3,6 +3,7 @@ This is the class responsible from communicating
 with the firebase authentication service.
 """
 import requests
+from firebase_admin.exceptions import FirebaseError
 
 from ..meta.singleton_meta import SingletonMeta
 
@@ -14,7 +15,9 @@ from firebase_admin.auth import *
 import os
 
 class FirebaseHandler(metaclass=SingletonMeta):
-    def __init__(self):
+    def __init__(
+            self
+    ):
         self._cred: credentials.Certificate = credentials.Certificate(
             {
                 "type": os.getenv("TYPE"),
@@ -45,6 +48,16 @@ class FirebaseHandler(metaclass=SingletonMeta):
         )
         return response.json()
 
+    def get_user_info(
+            self,
+            email: str
+    ) -> dict:
+        user_details = auth.get_user_by_email(email, app=self._app)
+        return {
+            "userUid": user_details.uid,
+            "email": user_details.email,
+        }
+
     def login(
             self,
             email: str,
@@ -53,15 +66,23 @@ class FirebaseHandler(metaclass=SingletonMeta):
         response: dict = self._request_executor(email, password, "signInWithPassword")
         return response
 
+    def logout(
+            self,
+            user_uid: str
+    ) -> bool:
+        auth.revoke_refresh_tokens(user_uid, app=self._app)
+        return True
 
     def register(
             self,
             email: str,
             password: str
     ) -> dict:
+        # NOTE: We can also get username for this method.
         response = self._request_executor(email, password, "signUp")
         return response
-    
+
+
     def validate_token(
             self,
             token: str

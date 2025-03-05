@@ -2,6 +2,7 @@ import re
 
 from fastapi import APIRouter, Depends, Response, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.status import *
 
 from ..common.request_model.auth_route_model import *
@@ -37,7 +38,7 @@ def login(
         content=ResponseModel(
             success=login_result.get("success"),
             message=login_result.get("message"),
-            data={},
+            data=login_result.get("data"),
             error=login_result.get("error")
         ).model_dump()
     )
@@ -67,18 +68,43 @@ def register(
         content=ResponseModel(
             success=register_result.get("success"),
             message=register_result.get("message"),
-            data={},
+            data=register_result.get("data"),
             error=register_result.get("error")
         ).model_dump()
     )
 
 
 @auth_router.post("/logout", tags=["Auth"])
-def logout():
-    pass
+def logout(
+        logout_data: LogoutRequest,
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    jwt = jwt.credentials
+    _auth_service = AuthService()
+    logout_result: bool = _auth_service.logout(logout_data.user_uid)
+    return JSONResponse(
+        status_code=200 if logout_result else 500,
+        content=ResponseModel(
+            success=logout_result,
+            message="Logout successful" if logout_result else "Logout failed",
+            data={},
+            error=""
+        ).model_dump()
+    )
 
 
 @auth_router.post("/validate_token", tags=["Auth"])
-def validate_token(user_data: ValidateRequest):
+def validate_token(
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    jwt = jwt.credentials
     _auth_service = AuthService()
-    return _auth_service.validate_token(user_data.refresh_token)
+    return JSONResponse(
+        status_code=200 if _auth_service.validate_token(jwt) else 401,
+        content=ResponseModel(
+            success=_auth_service.validate_token(jwt),
+            message="Token is valid" if _auth_service.validate_token(jwt) else "Token is invalid",
+            data={},
+            error=""
+        ).model_dump()
+    )
