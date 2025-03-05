@@ -1,10 +1,51 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+
+from src.common.response_model.response_model import ResponseModel
 from src.routes.auth_route import auth_router
 
 load_dotenv()
 
 app = FastAPI(root_path="/api")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(
+        request: Request,
+        exc: StarletteHTTPException
+) -> JSONResponse:
+    error_response = ResponseModel(
+        success=False,
+        message=str(exc.detail),
+        data={},
+        error=""
+    ).model_dump()
+
+    status_code_messages = {
+        404: "Not found",
+        401: "Unauthorized",
+        403: "Not authenticated",
+        500: "Internal server error"
+    }
+
+    if exc.status_code in status_code_messages:
+        error_response["message"] = status_code_messages[exc.status_code]
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_response
+    )
+
 
 app.include_router(auth_router)
