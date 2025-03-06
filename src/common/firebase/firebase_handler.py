@@ -4,6 +4,7 @@ with the firebase authentication service.
 """
 import requests
 from firebase_admin.exceptions import FirebaseError
+from pprint import pprint
 
 from ..meta.singleton_meta import SingletonMeta
 
@@ -36,15 +37,14 @@ class FirebaseHandler(metaclass=SingletonMeta):
         self._app: firebase_admin = firebase_admin.initialize_app(self._cred)
         self._api_key: str = os.getenv("WEB_API_KEY")
 
-    def _request_executor(
+    def _post_request_executor(
             self,
-            email: str,
-            password: str,
+            payload: dict,
             endpoint: str
     ) -> dict:
         response = requests.post(
             f"https://identitytoolkit.googleapis.com/v1/accounts:{endpoint}?key={self._api_key}",
-            json={"email": email, "password": password, "returnSecureToken": True}
+            json=payload
         )
         return response.json()
 
@@ -63,7 +63,7 @@ class FirebaseHandler(metaclass=SingletonMeta):
             email: str,
             password: str
     ) -> dict:
-        response: dict = self._request_executor(email, password, "signInWithPassword")
+        response: dict = self._post_request_executor({"email": email, "password": password, "returnSecureToken": True}, "signInWithPassword")
         return response
 
     def logout(
@@ -79,7 +79,7 @@ class FirebaseHandler(metaclass=SingletonMeta):
             password: str
     ) -> dict:
         # NOTE: We can also get username for this method.
-        response = self._request_executor(email, password, "signUp")
+        response = self._post_request_executor({"email": email, "password": password, "returnSecureToken": True}, "signUp")
         return response
 
 
