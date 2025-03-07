@@ -1,6 +1,6 @@
 import re
 
-from fastapi import APIRouter, Depends, Response, HTTPException
+from fastapi import APIRouter, Depends, Response, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.status import *
@@ -8,8 +8,9 @@ from starlette.status import *
 from ..common.request_model.auth_route_model import *
 from ..service.auth_service import AuthService
 from ..common.response_model.response_model import ResponseModel
+from ..common.background_tasks import delete_unverified_email
 
-auth_router = APIRouter(prefix="/firebase")
+auth_router = APIRouter(prefix="/auth")
 
 @auth_router.post("/login", tags=["Auth"])
 def login(
@@ -45,7 +46,8 @@ def login(
 
 @auth_router.post("/register", tags=["Auth"])
 def register(
-        user_data: LoginRequest
+        user_data: LoginRequest,
+        background_tasks: BackgroundTasks
 ) -> JSONResponse:
     _auth_service = AuthService()
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
@@ -60,7 +62,10 @@ def register(
             ).model_dump()
         )
 
-    register_result:dict = _auth_service.register(user_data.email, user_data.password)
+    register_result: dict = _auth_service.register(user_data.email, user_data.password)
+    # If success
+    if register_result.get("success"):
+        background_tasks.add_task(delete_unverified_email, user_data.email)
     return JSONResponse(
         status_code=register_result.get("code"),
         headers={"refresh_token": register_result.get("refresh_token"),

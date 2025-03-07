@@ -20,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(
         request: Request,

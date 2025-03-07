@@ -2,17 +2,24 @@
 This is the class responsible from communicating
 with the firebase authentication service.
 """
+import time
+from time import sleep
+
 import requests
 from firebase_admin.exceptions import FirebaseError
 from pprint import pprint
 
 from ..meta.singleton_meta import SingletonMeta
+from ..logger import get_logger
+
 
 from fastapi import HTTPException
+from starlette.concurrency import run_in_threadpool
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from firebase_admin.auth import *
+import asyncio
 import os
 
 class FirebaseHandler(metaclass=SingletonMeta):
@@ -36,6 +43,7 @@ class FirebaseHandler(metaclass=SingletonMeta):
         )
         self._app: firebase_admin = firebase_admin.initialize_app(self._cred)
         self._api_key: str = os.getenv("WEB_API_KEY")
+        self._logger = get_logger(__name__)
 
     def _post_request_executor(
             self,
@@ -56,6 +64,7 @@ class FirebaseHandler(metaclass=SingletonMeta):
         return {
             "userUid": user_details.uid,
             "email": user_details.email,
+            "emailVerified": user_details.email_verified,
         }
 
     def login(
@@ -80,6 +89,24 @@ class FirebaseHandler(metaclass=SingletonMeta):
     ) -> dict:
         # NOTE: We can also get username for this method.
         response = self._post_request_executor({"email": email, "password": password, "returnSecureToken": True}, "signUp")
+
+        return response
+
+    def delete_unverified_email(
+            self,
+            email: str
+    ) -> None:
+        self._logger.info(f"Waiting for 5 minutes to delete unverified email: {email}")
+        time.sleep(5)
+        user: UserRecord = auth.get_user_by_email(email)
+        if not user.email_verified:
+            auth.delete_user(user.uid)
+
+    def send_verification_email(
+            self,
+            user_uid: str
+    ) -> dict:
+        response = self._post_request_executor({"requestType": "VERIFY_EMAIL", "idToken": user_uid}, "sendOobCode")
         return response
 
 
