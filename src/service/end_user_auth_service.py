@@ -13,7 +13,7 @@ from ..common.logger import get_logger
 #       and password reset
 
 # TODO: Do not forget to implement mongodb hashing.
-class AuthService(metaclass=SingletonMeta):
+class EndUserAuthService(metaclass=SingletonMeta):
     def __init__(self):
         self._auth_handler = FirebaseHandler()
         self._logger = get_logger(__name__)
@@ -71,8 +71,7 @@ class AuthService(metaclass=SingletonMeta):
     def register(
             self,
             email: str,
-            password: str,
-            background_tasks: BackgroundTasks = BackgroundTasks()
+            password: str
     ) -> dict:
         result: dict = {
             "code": 0,

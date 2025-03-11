@@ -6,9 +6,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.status import *
 
 from ..common.request_model.auth_route_model import *
-from ..service.auth_service import AuthService
+from ..service.end_user_auth_service import EndUserAuthService
 from ..common.response_model.response_model import ResponseModel
 from ..common.background_tasks import delete_unverified_email
+from ..common.logger import get_logger
+
+logger = get_logger(__name__)
 
 auth_router = APIRouter(prefix="/auth")
 
@@ -16,7 +19,8 @@ auth_router = APIRouter(prefix="/auth")
 def login(
         user_data: LoginRequest
 ) -> JSONResponse:
-    _auth_service = AuthService()
+    logger.info(f"Login request for {user_data.email}")
+    _auth_service = EndUserAuthService()
 
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
@@ -49,7 +53,8 @@ def register(
         user_data: LoginRequest,
         background_tasks: BackgroundTasks
 ) -> JSONResponse:
-    _auth_service = AuthService()
+    logger.info(f"Register request for {user_data.email}")
+    _auth_service = EndUserAuthService()
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
         return JSONResponse(
@@ -83,8 +88,9 @@ def logout(
         logout_data: LogoutRequest,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
+    logger.info(f"Logout request for {logout_data.user_uid}")
     jwt = jwt.credentials
-    _auth_service = AuthService()
+    _auth_service = EndUserAuthService()
     logout_result: bool = _auth_service.logout(logout_data.user_uid)
     return JSONResponse(
         status_code=200 if logout_result else 500,
@@ -101,7 +107,8 @@ def validate_token(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     jwt = jwt.credentials
-    _auth_service = AuthService()
+    logger.info(f"Validate token request for {jwt}")
+    _auth_service = EndUserAuthService()
     return JSONResponse(
         status_code=200 if _auth_service.validate_token(jwt) else 401,
         content=ResponseModel(
