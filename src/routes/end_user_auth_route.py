@@ -13,7 +13,7 @@ from ..common.logger import get_logger
 
 logger = get_logger(__name__)
 
-auth_router = APIRouter(prefix="/auth")
+auth_router = APIRouter(prefix="/auth/end_user")
 
 @auth_router.post("/login", tags=["Auth"])
 def login(

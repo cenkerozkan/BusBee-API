@@ -101,8 +101,6 @@ class EndUserAuthService(metaclass=SingletonMeta):
         else:
             # Send verification email
             self._auth_handler.send_verification_email(response.get("idToken"))
-            # Then add background task to delete unverified email
-            background_tasks.add_task(self._auth_handler.delete_unverified_email, email)
 
             user_info: dict = self._auth_handler.get_user_info(email)
             result.update(

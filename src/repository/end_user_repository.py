@@ -3,7 +3,7 @@ from ..common.db.mongodb_connector import MongoDBConnector
 from ..common.logger import get_logger
 from ..common.base.repository_base_class import RepositoryBaseClass
 
-class UserRepository(RepositoryBaseClass):
+class EndUserRepository(RepositoryBaseClass):
     def __init__(self):
         self._logger = get_logger(__name__)
         self._db = MongoDBConnector().client["bus_ops"]
