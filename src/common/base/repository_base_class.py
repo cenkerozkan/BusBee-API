@@ -24,3 +24,7 @@ class RepositoryBaseClass(ABC):
     @abstractmethod
     async def update_many(self, document):
         raise NotImplementedError
+
+    @abstractmethod
+    async def delete_one_by_email(self, document):
+        raise NotImplementedError

@@ -14,12 +14,12 @@ logger = get_logger(__name__)
 
 auth_router = APIRouter(prefix="/auth/end_user")
 
-@auth_router.post("/login", tags=["Auth"])
+@auth_router.post("/login", tags=["End User Auth"])
 def login(
         user_data: LoginRequest
 ) -> JSONResponse:
     logger.info(f"Login request for {user_data.email}")
-    _auth_service = EndUserAuthService()
+    _end_user_auth_service = EndUserAuthService()
 
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
@@ -34,7 +34,7 @@ def login(
             ).model_dump()
         )
 
-    login_result:dict = _auth_service.login(user_data.email, user_data.password)
+    login_result:dict = _end_user_auth_service.login(user_data.email, user_data.password)
     return JSONResponse(
         status_code=login_result.get("code"),
         headers={"refresh_token": login_result.get("refresh_token"),
@@ -47,7 +47,7 @@ def login(
         ).model_dump()
     )
 
-@auth_router.post("/register", tags=["Auth"])
+@auth_router.post("/register", tags=["End User Auth"])
 def register(
         user_data: LoginRequest,
         background_tasks: BackgroundTasks
@@ -82,7 +82,7 @@ def register(
         ).model_dump()
     )
 
-@auth_router.post("/logout", tags=["Auth"])
+@auth_router.post("/logout", tags=["End User Auth"])
 def logout(
         logout_data: LogoutRequest,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
@@ -101,7 +101,7 @@ def logout(
         ).model_dump()
     )
 
-@auth_router.post("/validate_token", tags=["Auth"])
+@auth_router.post("/validate_token", tags=["End User Auth"])
 def validate_token(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:

@@ -1,8 +1,9 @@
 import asyncio
 
 from ..common.db.mongodb_connector import MongoDBConnector
-from src.common.util.logger import get_logger
 from ..common.base.repository_base_class import RepositoryBaseClass
+from ..common.util.logger import get_logger
+from ..common.db.model.end_user_model import EndUserModel
 
 class EndUserRepository(RepositoryBaseClass):
     def __init__(self):
@@ -25,15 +26,13 @@ class EndUserRepository(RepositoryBaseClass):
                     "validator": {
                         "$jsonSchema": {
                             "bsonType": "object",
-                            "required": ["uid", "created_at", "last_active", "email", "password", "is_verified"],
+                            "required": ["uid", "created_at", "last_active", "email"],
                             "properties": {
                                 "uid": {"bsonType": "string"},
                                 "created_at": {"bsonType": "string"},
                                 "last_active": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
                                 "email": {"bsonType": "string"},
-                                "password": {"bsonType": "string"},
-                                "is_verified": {"bsonType": "bool"},
                                 "saved_routes": {
                                     "bsonType": "array",
                                     "items": {
@@ -54,15 +53,13 @@ class EndUserRepository(RepositoryBaseClass):
                     validator={
                         "$jsonSchema": {
                             "bsonType": "object",
-                            "required": ["uid", "created_at", "last_active", "email", "password", "is_verified"],
+                            "required": ["uid", "created_at", "last_active", "email"],
                             "properties": {
                                 "uid": {"bsonType": "string"},
                                 "created_at": {"bsonType": "string"},
                                 "last_active": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
                                 "email": {"bsonType": "string"},
-                                "password": {"bsonType": "string"},
-                                "is_verified": {"bsonType": "bool"},
                                 "saved_routes": {
                                     "bsonType": "array",
                                     "items": {
@@ -88,8 +85,16 @@ class EndUserRepository(RepositoryBaseClass):
     async def insert_one(
             self,
             document
-    ):
-        pass
+    ) -> bool:
+        try:
+            self._logger.info("Inserting document")
+            await self._collection.insert_one(document)
+
+        except Exception as e:
+            self._logger.error(f"Failed to insert document: {e}")
+            return False
+
+        return True
 
     async def insert_many(
             self,
@@ -99,6 +104,20 @@ class EndUserRepository(RepositoryBaseClass):
 
     async def get_all(self):
         pass
+
+    async def get_one(
+            self,
+            email: str
+    ) -> EndUserModel | None:
+        self._logger.info(f"Getting user for email: {email}")
+        try:
+            user = await self._collection.find_one({"email": email})
+            return EndUserModel(**user)
+
+        except Exception as e:
+            self._logger.error(f"Failed to get document: {e}")
+            return None
+
 
     async def update_one(
             self,
@@ -111,3 +130,17 @@ class EndUserRepository(RepositoryBaseClass):
             document
     ):
         pass
+
+    async def delete_one_by_email(
+            self,
+            email: str
+    ) -> bool:
+        self._logger.info(f"Deleting user with email: {email}")
+        try:
+            await self._collection.delete_one({"email": email})
+
+        except Exception as e:
+            self._logger.error(f"Failed to delete document: {e}")
+            return False
+
+        return True

@@ -7,6 +7,4 @@ class EndUserModel(BaseModel):
     last_active: str    # This is going to be a timestamp.
     role: str = "END_USER"
     email: str
-    password: str
-    is_verified: bool
     saved_routes: list[RouteModel]

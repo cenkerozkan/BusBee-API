@@ -1,8 +1,14 @@
+import datetime as dt
+import asyncio
+
 from ..common.meta.singleton_meta import SingletonMeta
 from ..common.firebase.firebase_handler import FirebaseHandler
 from ..common.db.model.end_user_model import EndUserModel
 from ..repository.end_user_repository import EndUserRepository
-from src.common.util.logger import get_logger
+from ..common.util.logger import get_logger
+from ..common.util.error_messages import get_error_message
+
+from pprint import pprint
 
 
 # TODO: After finishing firebase auth,
@@ -35,6 +41,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
             response:dict = self._auth_handler.login(email, password)
 
         except Exception as e:
+            self._logger.error(f"Login failed: {e}")
             result.update(
                 {
                     "code": 500,
@@ -50,11 +57,12 @@ class EndUserAuthService(metaclass=SingletonMeta):
                 {
                     "code": response.get("error").get("code"),
                     "success": False,
-                    "message": response.get("error").get("errors")[0].get("message"),
+                    "message": get_error_message(response.get("error").get("errors")[0].get("message")),
                 }
             )
         else:
-            user_info: dict = self._auth_handler.get_user_info(email)
+            firebase_user_info: dict = self._auth_handler.get_user_info(email)
+            user_info: EndUserModel = asyncio.run(self._end_user_repository.get_one(email))
             result.update(
                 {
                     "code": 200,
@@ -62,7 +70,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
                     "message": "Login successful",
                     "refresh_token": response.get("refreshToken"),
                     "id_token": response.get("idToken"),
-                    "data": user_info
+                    "data": user_info.model_dump()
                 }
             )
         return result
@@ -81,7 +89,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
             "error": "",
             "data": {}
         }
-        response: dict = {}
+        response: dict
         try:
             response = self._auth_handler.register(email, password)
 
@@ -94,14 +102,22 @@ class EndUserAuthService(metaclass=SingletonMeta):
                 {
                     "code": response.get("error").get("code"),
                     "success": False,
-                    "message": response.get("error").get("message"),
+                    "message": get_error_message(response.get("error").get("message")),
                 }
             )
+
         else:
             # Send verification email
             self._auth_handler.send_verification_email(response.get("idToken"))
-
             user_info: dict = self._auth_handler.get_user_info(email)
+            end_user_model = EndUserModel(
+                uid=user_info.get("userUid"),
+                created_at=str(dt.datetime.now().isoformat()),
+                last_active=str(dt.datetime.now().isoformat()),
+                email=email,
+                saved_routes=[]
+            )
+            is_saved: bool = asyncio.run(self._end_user_repository.insert_one(end_user_model.model_dump()))
             result.update(
                 {
                     "code": 200,
@@ -109,7 +125,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
                     "message": "Registration successful",
                     "refresh_token": response.get("refreshToken"),
                     "id_token": response.get("idToken"),
-                    "data": user_info
+                    "data": end_user_model.model_dump()
                 }
             )
         return result
