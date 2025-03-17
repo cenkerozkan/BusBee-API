@@ -3,23 +3,16 @@ This is the class responsible from communicating
 with the firebase authentication service.
 """
 import time
-from time import sleep
 
 import requests
-from firebase_admin.exceptions import FirebaseError
-from pprint import pprint
 
 from ..meta.singleton_meta import SingletonMeta
-from ..logger import get_logger
+from src.common.util.logger import get_logger
 
-
-from fastapi import HTTPException
-from starlette.concurrency import run_in_threadpool
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from firebase_admin.auth import *
-import asyncio
 import os
 
 class FirebaseHandler(metaclass=SingletonMeta):

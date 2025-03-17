@@ -1,12 +1,12 @@
-from ..common.meta.singleton_meta import SingletonMeta
 from ..common.db.mongodb_connector import MongoDBConnector
-from ..common.logger import get_logger
+from src.common.util.logger import get_logger
 from ..common.base.repository_base_class import RepositoryBaseClass
 
 class EndUserRepository(RepositoryBaseClass):
     def __init__(self):
         self._logger = get_logger(__name__)
         self._db = MongoDBConnector().client["bus_ops"]
+        self._collection = self._db["end_users"]
 
     async def insert_one(
             self,

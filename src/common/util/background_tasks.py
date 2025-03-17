@@ -1,9 +1,7 @@
-import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import auth
 import time
-import os
 
-from .logger import get_logger
+from src.common.util.logger import get_logger
 
 logger = get_logger(__name__)
 

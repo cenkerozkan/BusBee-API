@@ -26,8 +26,10 @@ error_messages = {
     "AUTH/USER_NOT_FOUND": "No user found with this email",
     "AUTH/WEAK_PASSWORD": "Password should be at least 6 characters",
     "AUTH/INVALID_EMAIL": "Invalid email format"
+
+    # Other errors
 }
 
 def get_error_message(error_code: str) -> str:
     """Get the error message for a given error code."""
-    return error_messages.get(error_code.upper(), "Internal server error occurred")
+    return error_messages.get(error_code.upper(), "Internal server error occurred") if error_messages.get(error_code.upper(), "Internal server error occurred") else "UNKNOWN ERROR"

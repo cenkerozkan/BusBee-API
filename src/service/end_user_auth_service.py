@@ -1,11 +1,8 @@
-from fastapi import HTTPException, BackgroundTasks
-from fastapi.responses import JSONResponse
-from pprint import pprint
-
 from ..common.meta.singleton_meta import SingletonMeta
 from ..common.firebase.firebase_handler import FirebaseHandler
-from ..common.response_model.response_model import ResponseModel
-from ..common.logger import get_logger
+from ..common.db.model.end_user_model import EndUserModel
+from ..repository.end_user_repository import EndUserRepository
+from src.common.util.logger import get_logger
 
 
 # TODO: After finishing firebase auth,
@@ -15,8 +12,9 @@ from ..common.logger import get_logger
 # TODO: Do not forget to implement mongodb hashing.
 class EndUserAuthService(metaclass=SingletonMeta):
     def __init__(self):
-        self._auth_handler = FirebaseHandler()
         self._logger = get_logger(__name__)
+        self._auth_handler = FirebaseHandler()
+        self._end_user_repository = EndUserRepository()
 
     def login(
             self,
