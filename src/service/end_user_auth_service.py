@@ -30,30 +30,9 @@ class EndUserAuthService(metaclass=SingletonMeta):
             "error": "",
             "data": {}
         }
+        response: dict
         try:
             response:dict = self._auth_handler.login(email, password)
-            if "error" in response:
-                result.update(
-                    {
-                        "code": response.get("error").get("code"),
-                        "success": False,
-                        "message": response.get("error").get("errors")[0].get("message"),
-                    }
-                )
-            else:
-                user_info: dict = self._auth_handler.get_user_info(email)
-                result.update(
-                    {
-                        "code": 200,
-                        "success": True,
-                        "message": "Login successful",
-                        "refresh_token": response.get("refreshToken"),
-                        "id_token": response.get("idToken"),
-                        "data": user_info
-                    }
-                )
-
-            return result
 
         except Exception as e:
             result.update(
@@ -65,6 +44,28 @@ class EndUserAuthService(metaclass=SingletonMeta):
                 }
             )
             return result
+
+        if "error" in response:
+            result.update(
+                {
+                    "code": response.get("error").get("code"),
+                    "success": False,
+                    "message": response.get("error").get("errors")[0].get("message"),
+                }
+            )
+        else:
+            user_info: dict = self._auth_handler.get_user_info(email)
+            result.update(
+                {
+                    "code": 200,
+                    "success": True,
+                    "message": "Login successful",
+                    "refresh_token": response.get("refreshToken"),
+                    "id_token": response.get("idToken"),
+                    "data": user_info
+                }
+            )
+        return result
 
     def register(
             self,
@@ -119,10 +120,12 @@ class EndUserAuthService(metaclass=SingletonMeta):
     ) -> bool:
         try:
             logout_result: bool = self._auth_handler.logout(user_uid)
-            return True
+
         except Exception as e:
             print("Error: ", e)
             return False
+
+        return True
 
     def validate_token(
             self,
