@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atilim-bus-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://root:BusOps_3298%40@mongodb:27017/
+    restart: always
+
   mongodb:
     image: mongo:latest
     container_name: mongodb
