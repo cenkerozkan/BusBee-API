@@ -7,8 +7,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from ..common.request_model.auth_route_model import *
 from ..service.end_user_auth_service import EndUserAuthService
 from ..common.response_model.response_model import ResponseModel
-from src.common.util.background_tasks import delete_unverified_email
-from src.common.util.logger import get_logger
+from ..common.util.background_tasks import delete_unverified_email
+from ..common.util.logger import get_logger
 
 logger = get_logger(__name__)
 

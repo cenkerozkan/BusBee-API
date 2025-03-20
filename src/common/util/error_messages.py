@@ -20,12 +20,13 @@ error_messages = {
     "VERIFICATION_EXPIRED": "Verification code expired",
 
     # Firebase specific errors
-    "AUTH/EMAIL_EXISTS": "Email already exists",
-    "AUTH/INVALID_PASSWORD": "Invalid password provided",
-    "AUTH/USER_DISABLED": "User account has been disabled",
-    "AUTH/USER_NOT_FOUND": "No user found with this email",
-    "AUTH/WEAK_PASSWORD": "Password should be at least 6 characters",
-    "AUTH/INVALID_EMAIL": "Invalid email format"
+    "INVALID_LOGIN_CREDENTIALS": "Email or password is incorrect",
+    "EMAIL_EXISTS": "Email already exists",
+    "INVALID_PASSWORD": "Invalid password provided",
+    "USER_DISABLED": "User account has been disabled",
+    "USER_NOT_FOUND": "No user found with this email",
+    "WEAK_PASSWORD": "Password should be at least 6 characters",
+    "INVALID_EMAIL": "Invalid email format"
 
     # Other errors
 }
