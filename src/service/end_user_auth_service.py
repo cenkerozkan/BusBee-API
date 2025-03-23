@@ -53,6 +53,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
             return result
 
         if "error" in response:
+            self._logger.error(f"Login failed: {response['error']}")
             result.update(
                 {
                     "code": response.get("error").get("code"),
@@ -98,6 +99,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
             return result
 
         if "error" in response:
+            self._logger.error(f"Registration failed: {response['error']}")
             result.update(
                 {
                     "code": response.get("error").get("code"),
