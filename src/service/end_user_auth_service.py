@@ -145,6 +145,21 @@ class EndUserAuthService(metaclass=SingletonMeta):
 
         return True
 
+    def delete_account(
+            self,
+            user_uid: str
+    ):
+        self._logger.info(f"Delete account request for {user_uid}")
+        try:
+            self._auth_handler.delete_user(user_uid)
+            asyncio.run(self._end_user_repository.delete_one_by_uid(user_uid))
+
+        except Exception as e:
+            self._logger.error(f"Delete account failed: {e}")
+            return False
+
+        return True
+
     def validate_token(
             self,
             token: str

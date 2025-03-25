@@ -3,6 +3,9 @@ from pydantic import BaseModel, EmailStr
 class LogoutRequest(BaseModel):
     user_uid: str
 
+class DeleteAccountRequest(BaseModel):
+    user_uid: str
+
 class LoginRequest(BaseModel):
     email: str
     password: str

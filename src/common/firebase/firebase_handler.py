@@ -114,3 +114,10 @@ class FirebaseHandler(metaclass=SingletonMeta):
             return False
         except Exception:
             return False
+
+    def delete_user(
+            self,
+            user_uid: str
+    ) -> bool:
+        auth.delete_user(user_uid, app=self._app)
+        return True

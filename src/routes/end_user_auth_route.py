@@ -101,6 +101,25 @@ def logout(
         ).model_dump()
     )
 
+@auth_router.delete("/delete_account", tags=["End User Auth"])
+def delete_account(
+        delete_data: DeleteAccountRequest,
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    jwt = jwt.credentials
+    logger.info(f"Delete account request for {jwt}")
+    _auth_service = EndUserAuthService()
+    delete_result: bool = _auth_service.delete_account(delete_data.user_uid)
+    return JSONResponse(
+        status_code=200 if delete_result else 500,
+        content=ResponseModel(
+            success=delete_result,
+            message="Account deleted" if delete_result else "Failed to delete account",
+            data={},
+            error=""
+        ).model_dump()
+    )
+
 @auth_router.post("/validate_token", tags=["End User Auth"])
 def validate_token(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())

@@ -131,6 +131,20 @@ class EndUserRepository(RepositoryBaseClass):
     ):
         pass
 
+    async def delete_one_by_uid(
+            self,
+            uid: str
+    ) -> bool:
+        self._logger.info(f"Deleting user with uid: {uid}")
+        try:
+            await self._collection.delete_one({"uid": uid})
+
+        except Exception as e:
+            self._logger.error(f"Failed to delete document: {e}")
+            return False
+
+        return True
+
     async def delete_one_by_email(
             self,
             email: str
