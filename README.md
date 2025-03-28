@@ -5,6 +5,17 @@ Backend of the Atılım Service Management Project
 
 A FastAPI-based authentication and user management system with support for End Users and Admin Users.
 
+## Base URL
+```
+https://busops-acb3c422b0e4.herokuapp.com/api
+```
+All endpoints described in this documentation should be prefixed with this base URL.
+
+For example, to access the end user login endpoint:
+```
+POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
+```
+
 ## Table of Contents
 - [Authentication Services](#authentication-services)
 - [Global Error Handling](#global-error-handling)
