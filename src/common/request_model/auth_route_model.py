@@ -16,3 +16,6 @@ class RegisterRequest(BaseModel):
 
 class ValidateRequest(BaseModel):
     refresh_token: str
+
+class RemoveAdminUserModel(BaseModel):
+    user_uid: str

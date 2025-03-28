@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from src.common.response_model.response_model import ResponseModel
-from src.routes.end_user_auth_route import auth_router
+from src.routes.end_user_auth_route import end_user_auth_router
+from src.routes.admin_user_auth_route import admin_user_auth_router
 
 load_dotenv()
 
@@ -50,4 +51,5 @@ async def http_exception_handler(
     )
 
 
-app.include_router(auth_router)
+app.include_router(end_user_auth_router)
+app.include_router(admin_user_auth_router)

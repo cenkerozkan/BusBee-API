@@ -3,23 +3,27 @@ import re
 from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security.api_key import APIKeyHeader
+from starlette.responses import JSONResponse
 
 from ..common.request_model.auth_route_model import *
-from ..service.end_user_auth_service import EndUserAuthService
+from ..service.admin_user_auth_service import AdminUserAuthService
 from ..common.response_model.response_model import ResponseModel
-from ..common.util.background_tasks import delete_unverified_email
+from ..common.db.model.add_admin_user_model import AddAdminUserModel
 from ..common.util.logger import get_logger
+from ..common.util.get_admin_api_key import validate_admin_api_key
+from ..common.request_model.auth_route_model import RemoveAdminUserModel
 
 logger = get_logger(__name__)
 
-end_user_auth_router = APIRouter(prefix="/auth/end_user")
+admin_user_auth_router = APIRouter(prefix="/auth/admin_user")
 
-@end_user_auth_router.post("/login", tags=["End User Auth"])
+@admin_user_auth_router.post("/login", tags=["Admin User Auth"])
 def login(
         user_data: LoginRequest
 ) -> JSONResponse:
     logger.info(f"Login request for {user_data.email}")
-    _end_user_auth_service = EndUserAuthService()
+    _admin_user_auth_service = AdminUserAuthService()
 
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
@@ -34,7 +38,7 @@ def login(
             ).model_dump()
         )
 
-    login_result:dict = _end_user_auth_service.login(user_data.email, user_data.password)
+    login_result: dict = _admin_user_auth_service.login(user_data.email, user_data.password)
     return JSONResponse(
         status_code=login_result.get("code"),
         headers={"refresh_token": login_result.get("refresh_token"),
@@ -47,49 +51,15 @@ def login(
         ).model_dump()
     )
 
-@end_user_auth_router.post("/register", tags=["End User Auth"])
-def register(
-        user_data: LoginRequest,
-        background_tasks: BackgroundTasks
-) -> JSONResponse:
-    logger.info(f"Register request for {user_data.email}")
-    _auth_service = EndUserAuthService()
-    email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
-    if not re.match(email_pattern, user_data.email):
-        return JSONResponse(
-            status_code=400,
-            content=ResponseModel(
-                success=False,
-                message="Invalid email format",
-                data={},
-                error=""
-            ).model_dump()
-        )
 
-    register_result: dict = _auth_service.register(user_data.email, user_data.password)
-    # If success
-    if register_result.get("success"):
-        background_tasks.add_task(delete_unverified_email, user_data.email)
-    return JSONResponse(
-        status_code=register_result.get("code"),
-        headers={"refresh_token": register_result.get("refresh_token"),
-                 "id_token": register_result.get("id_token")},
-        content=ResponseModel(
-            success=register_result.get("success"),
-            message=register_result.get("message"),
-            data=register_result.get("data"),
-            error=register_result.get("error")
-        ).model_dump()
-    )
-
-@end_user_auth_router.post("/logout", tags=["End User Auth"])
+@admin_user_auth_router.post("/logout", tags=["Admin User Auth"])
 def logout(
         logout_data: LogoutRequest,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     logger.info(f"Logout request for {logout_data.user_uid}")
     jwt = jwt.credentials
-    _auth_service = EndUserAuthService()
+    _auth_service = AdminUserAuthService()
     logout_result: bool = _auth_service.logout(logout_data.user_uid)
     return JSONResponse(
         status_code=200 if logout_result else 500,
@@ -101,14 +71,14 @@ def logout(
         ).model_dump()
     )
 
-@end_user_auth_router.delete("/delete_account", tags=["End User Auth"])
+@admin_user_auth_router.delete("/delete_account", tags=["Admin User Auth"])
 def delete_account(
         delete_data: DeleteAccountRequest,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     jwt = jwt.credentials
     logger.info(f"Delete account request for {jwt}")
-    _auth_service = EndUserAuthService()
+    _auth_service = AdminUserAuthService()
     delete_result: bool = _auth_service.delete_account(delete_data.user_uid)
     return JSONResponse(
         status_code=200 if delete_result else 500,
@@ -120,18 +90,81 @@ def delete_account(
         ).model_dump()
     )
 
-@end_user_auth_router.post("/validate_token", tags=["End User Auth"])
+@admin_user_auth_router.post("/validate_token", tags=["Admin User Auth"])
 def validate_token(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     jwt = jwt.credentials
     logger.info(f"Validate token request for {jwt}")
-    _auth_service = EndUserAuthService()
+    _auth_service = AdminUserAuthService()
     return JSONResponse(
         status_code=200 if _auth_service.validate_token(jwt) else 401,
         content=ResponseModel(
             success=_auth_service.validate_token(jwt),
             message="Token is valid" if _auth_service.validate_token(jwt) else "Token is invalid",
+            data={},
+            error=""
+        ).model_dump()
+    )
+
+@admin_user_auth_router.post("/add_admin_user", tags=["Admin User Auth"])
+def add_admin_user(
+        user_data: AddAdminUserModel,
+        is_key_valid: str = Depends(validate_admin_api_key),
+) -> JSONResponse:
+    logger.info(f"Add admin user request for {user_data.email}")
+    _auth_service = AdminUserAuthService()
+
+    if is_key_valid:
+        response: dict = _auth_service.add_admin_user(
+            user_data.email,
+            user_data.password
+        )
+        return JSONResponse(
+            status_code=response.get("code"),
+            content=ResponseModel(
+                success=response.get("success"),
+                message=response.get("message"),
+                data=response.get("data"),
+                error=response.get("error")
+            ).model_dump()
+        )
+    return JSONResponse(
+        status_code=403,
+        content=ResponseModel(
+            success=False,
+            message="Unauthorized",
+            data={},
+            error=""
+        ).model_dump()
+    )
+
+@admin_user_auth_router.post("/remove_admin_user", tags=["Admin User Auth"])
+def remove_admin_user(
+        user_data: RemoveAdminUserModel,
+        is_key_valid: str = Depends(validate_admin_api_key),
+) -> JSONResponse:
+    logger.info(f"Remove admin user request for {user_data.user_uid}")
+    _auth_service = AdminUserAuthService()
+
+    if is_key_valid:
+        response: dict = _auth_service.remove_admin_user(
+            user_data.user_uid
+        )
+        return JSONResponse(
+            status_code=response.get("code"),
+            content=ResponseModel(
+                success=response.get("success"),
+                message=response.get("message"),
+                data=response.get("data"),
+                error=response.get("error")
+            ).model_dump()
+        )
+    return JSONResponse(
+        status_code=403,
+        content=ResponseModel(
+            success=False,
+            message="Unauthorized",
             data={},
             error=""
         ).model_dump()

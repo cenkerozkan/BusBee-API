@@ -6,4 +6,3 @@ class AdminUserModel(BaseModel):
     last_active: str    # This is going to be a timestamp.
     role: str = "ADMIN_USER"
     email: str
-    password: str

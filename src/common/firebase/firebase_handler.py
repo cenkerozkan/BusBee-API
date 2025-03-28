@@ -121,3 +121,27 @@ class FirebaseHandler(metaclass=SingletonMeta):
     ) -> bool:
         auth.delete_user(user_uid, app=self._app)
         return True
+
+    def create_admin_user(
+            self,
+            email: str,
+            password: str
+    ) -> dict:
+        result: dict ={
+            "uid": "",
+            "email": email,
+            "password": password
+        }
+        # NOTE: I always expect this method to work
+        #       correctly, and this will be called
+        #       in a try block. So it is always returning True
+        #       if there is no problem with the firebase
+        #       project.
+        new_admin_user = auth.create_user(
+            email=email,
+            email_verified=True,
+            password=password,
+            app=self._app
+        )
+        result.update({"uid": new_admin_user.uid})
+        return result
