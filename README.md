@@ -5,6 +5,26 @@ Backend of the Atılım Service Management Project
 
 A FastAPI-based authentication and user management system with support for End Users and Admin Users.
 
+## Table of Contents
+- [Authentication Services](#authentication-services)
+- [Global Error Handling](#global-error-handling)
+- [End User Authentication Endpoints](#end-user-authentication-endpoints)
+  - [Register End User](#register-end-user)
+  - [Login End User](#login-end-user)
+  - [Logout End User](#logout-end-user)
+  - [Delete End User Account](#delete-end-user-account)
+  - [Validate End User Token](#validate-end-user-token)
+- [Admin User Authentication Endpoints](#admin-user-authentication-endpoints)
+  - [Login Admin User](#login-admin-user)
+  - [Logout Admin User](#logout-admin-user)
+  - [Delete Admin User Account](#delete-admin-user-account)
+  - [Validate Admin Token](#validate-admin-token)
+  - [Add Admin User](#add-admin-user)
+  - [Remove Admin User](#remove-admin-user)
+- [Data Models](#data-models)
+  - [End User Model](#end-user-model)
+  - [Admin User Model](#admin-user-model)
+
 ## Authentication Services
 
 The API implements two separate authentication services:
