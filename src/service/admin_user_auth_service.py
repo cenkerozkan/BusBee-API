@@ -123,7 +123,7 @@ class AdminUserAuthService(metaclass=SingletonMeta):
             "error": "",
             "data": {}
         }
-        response: dict
+        response: dict = {}
         is_saved: bool
 
         try:
