@@ -32,13 +32,7 @@ class EndUserRepository(RepositoryBaseClass):
                                 "created_at": {"bsonType": "string"},
                                 "last_active": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"},
-                                "saved_routes": {
-                                    "bsonType": "array",
-                                    "items": {
-                                        "bsonType": "object"
-                                    }
-                                }
+                                "email": {"bsonType": "string"}
                             }
                         }
                     }
@@ -59,13 +53,7 @@ class EndUserRepository(RepositoryBaseClass):
                                 "created_at": {"bsonType": "string"},
                                 "last_active": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"},
-                                "saved_routes": {
-                                    "bsonType": "array",
-                                    "items": {
-                                        "bsonType": "object"
-                                    }
-                                }
+                                "email": {"bsonType": "string"}
                             }
                         }
                     }
