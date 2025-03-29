@@ -95,8 +95,7 @@ All responses follow the `ResponseModel` format:
     "created_at": "2025-03-29T10:00:00",
     "last_active": "2025-03-29T10:00:00",
     "role": "END_USER",
-    "email": "user@example.com",
-    "saved_routes": []
+    "email": "user@example.com"
   },
   "error": null
 }
@@ -144,8 +143,7 @@ All responses follow the `ResponseModel` format:
     "created_at": "2025-03-29T10:00:00",
     "last_active": "2025-03-29T10:00:00",
     "role": "END_USER",
-    "email": "user@example.com",
-    "saved_routes": []
+    "email": "user@example.com"
   },
   "error": null
 }
