@@ -132,6 +132,7 @@ class AdminUserAuthService(metaclass=SingletonMeta):
         except Exception as e:
             self._logger.error(f"Failed to add admin user: {e}")
             result.update({"code": 500, "success": False, "message": "Failed to add admin user", "error": str(e)})
+            return result
 
         if response:
             new_admin_user: AdminUserModel = AdminUserModel(
@@ -163,17 +164,19 @@ class AdminUserAuthService(metaclass=SingletonMeta):
             "error": "",
             "data": {}
         }
-        firebase_response: bool
+        response: bool = False
+        is_deleted: bool = False
 
         try:
-            firebase_response = self._auth_handler.delete_user(user_uid)
-            is_deleted: bool = asyncio.run(self._admin_user_repository.delete_one_by_uid(user_uid))
+            response = self._auth_handler.delete_user(user_uid)
+            is_deleted = asyncio.run(self._admin_user_repository.delete_one_by_uid(user_uid))
 
         except Exception as e:
             self._logger.error(f"Failed to remove admin user: {e}")
             result.update({"code": 500, "success": False, "message": "Failed to remove admin user", "error": str(e)})
+            return result
 
-        if firebase_response and is_deleted:
+        if response and is_deleted:
             result.update(
                 {
                     "code": 200,
