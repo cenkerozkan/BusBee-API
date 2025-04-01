@@ -20,22 +20,7 @@ class AdminUserRepository(RepositoryBaseClass):
             # Check if our database exists
             if "bus_ops" not in db_list:
                 self._logger.warn("Creating new database")
-                await self._db.command({
-                    "create": "admin_users",
-                    "validator": {
-                        "$jsonSchema": {
-                            "bsonType": "object",
-                            "required": ["uid", "created_at", "last_active", "email"],
-                            "properties": {
-                                "uid": {"bsonType": "string"},
-                                "created_at": {"bsonType": "string"},
-                                "last_active": {"bsonType": "string"},
-                                "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"}
-                            }
-                        }
-                    }
-                })
+                await self._db.command({"create": "admin_users"})
                 self._logger.info("Created bus_ops database")
 
             # Check if collection exists

@@ -20,47 +20,13 @@ class DriverUserRepository(RepositoryBaseClass):
             # Check if our database exists
             if "bus_ops" not in db_list:
                 self._logger.warn("Creating new database")
-                await self._db.command({
-                    "create": "driver_users",
-                    "validator": {
-                        "$jsonSchema": {
-                            "bsonType": "object",
-                            "required": ["uid", "first_name", "last_name", "phone_number", "role"],
-                            "properties": {
-                                "uid": {"bsonType": "string"},
-                                "first_name": {"bsonType": "string"},
-                                "last_name": {"bsonType": "string"},
-                                "phone_number": {"bsonType": "string"},
-                                "role": {"bsonType": "string"},
-                                "assigned_route": {"bsonType": "object"},
-                                "vehicle": {"bsonType": "object"}
-                            }
-                        }
-                    }
-                })
+                await self._db.command({"create": "driver_users"})
                 self._logger.info("Created bus_ops database")
 
             # Check if collection exists
             collections = await self._db.list_collection_names()
             if "driver_users" not in collections:
-                await self._db.create_collection(
-                    "driver_users",
-                    validator={
-                        "$jsonSchema": {
-                            "bsonType": "object",
-                            "required": ["uid", "first_name", "last_name", "phone_number", "role"],
-                            "properties": {
-                                "uid": {"bsonType": "string"},
-                                "first_name": {"bsonType": "string"},
-                                "last_name": {"bsonType": "string"},
-                                "phone_number": {"bsonType": "string"},
-                                "role": {"bsonType": "string"},
-                                "assigned_route": {"bsonType": "object"},
-                                "vehicle": {"bsonType": "object"}
-                            }
-                        }
-                    }
-                )
+                await self._db.create_collection("driver_users")
                 self._logger.info("Created driver_users collection")
 
             # Create indexes
