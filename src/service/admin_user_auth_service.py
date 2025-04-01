@@ -1,25 +1,25 @@
 import datetime as dt
 import asyncio
+from operator import is_not
 
 from ..common.meta.singleton_meta import SingletonMeta
-from ..common.firebase.firebase_handler import FirebaseHandler
+from ..common.firebase.firebase_handler import firebase_handler
 from ..common.db.model.admin_user_model import AdminUserModel
-from ..repository.admin_user_repository import AdminUserRepository
+from ..repository.admin_user_repository import admin_user_repository
 from ..common.util.logger import get_logger
 from ..common.util.error_messages import get_error_message
 
 from pprint import pprint
 
-
 # TODO: After finishing firebase auth,
 #       look up for email verification
 #       and password reset
 
-class AdminUserAuthService(metaclass=SingletonMeta):
+class AdminUserAuthService:
     def __init__(self):
         self._logger = get_logger(__name__)
-        self._auth_handler = FirebaseHandler()
-        self._admin_user_repository = AdminUserRepository()
+        self._auth_handler = firebase_handler
+        self._admin_user_repository = admin_user_repository
 
     def login(
             self,
@@ -164,7 +164,7 @@ class AdminUserAuthService(metaclass=SingletonMeta):
             "error": "",
             "data": {}
         }
-        response: bool = False
+        firebase_response: bool = False
         is_deleted: bool = False
 
         try:
@@ -185,3 +185,5 @@ class AdminUserAuthService(metaclass=SingletonMeta):
                 }
             )
         return result
+
+admin_user_auth_service = AdminUserAuthService()

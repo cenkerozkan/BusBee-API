@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class RepositoryBaseClass(ABC):
     @abstractmethod
-    async def _ensure_db_setup(self):
+    async def ensure_db_setup(self):
         raise NotImplementedError
 
     @abstractmethod

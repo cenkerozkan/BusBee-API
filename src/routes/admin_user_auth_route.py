@@ -6,13 +6,14 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKeyHeader
 from starlette.responses import JSONResponse
 
-from ..common.request_model.auth_route_model import *
-from ..service.admin_user_auth_service import AdminUserAuthService
+from ..common.request_model.auth_route_models import *
 from ..common.response_model.response_model import ResponseModel
-from ..common.db.model.add_admin_user_model import AddAdminUserModel
+from ..common.request_model.auth_route_models import  AddAdminUserModel
 from ..common.util.logger import get_logger
 from ..common.util.get_admin_api_key import validate_admin_api_key
-from ..common.request_model.auth_route_model import RemoveAdminUserModel
+from ..common.request_model.auth_route_models import RemoveAdminUserModel
+
+from ..service.admin_user_auth_service import admin_user_auth_service
 
 logger = get_logger(__name__)
 
@@ -23,7 +24,6 @@ def login(
         user_data: LoginRequest
 ) -> JSONResponse:
     logger.info(f"Login request for {user_data.email}")
-    _admin_user_auth_service = AdminUserAuthService()
 
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
@@ -38,7 +38,7 @@ def login(
             ).model_dump()
         )
 
-    login_result: dict = _admin_user_auth_service.login(user_data.email, user_data.password)
+    login_result: dict = admin_user_auth_service.login(user_data.email, user_data.password)
     return JSONResponse(
         status_code=login_result.get("code"),
         headers={"refresh_token": login_result.get("refresh_token"),
@@ -59,8 +59,7 @@ def logout(
 ) -> JSONResponse:
     logger.info(f"Logout request for {logout_data.user_uid}")
     jwt = jwt.credentials
-    _auth_service = AdminUserAuthService()
-    logout_result: bool = _auth_service.logout(logout_data.user_uid)
+    logout_result: bool = admin_user_auth_service.logout(logout_data.user_uid)
     return JSONResponse(
         status_code=200 if logout_result else 500,
         content=ResponseModel(
@@ -78,8 +77,7 @@ def delete_account(
 ) -> JSONResponse:
     jwt = jwt.credentials
     logger.info(f"Delete account request for {jwt}")
-    _auth_service = AdminUserAuthService()
-    delete_result: bool = _auth_service.delete_account(delete_data.user_uid)
+    delete_result: bool = admin_user_auth_service.delete_account(delete_data.user_uid)
     return JSONResponse(
         status_code=200 if delete_result else 500,
         content=ResponseModel(
@@ -96,12 +94,13 @@ def validate_token(
 ) -> JSONResponse:
     jwt = jwt.credentials
     logger.info(f"Validate token request for {jwt}")
-    _auth_service = AdminUserAuthService()
+
+    result = admin_user_auth_service.validate_token(jwt)
     return JSONResponse(
-        status_code=200 if _auth_service.validate_token(jwt) else 401,
+        status_code=200 if result is True else 401,
         content=ResponseModel(
-            success=_auth_service.validate_token(jwt),
-            message="Token is valid" if _auth_service.validate_token(jwt) else "Token is invalid",
+            success=result,
+            message="Token is valid" if result else "Token is invalid",
             data={},
             error=""
         ).model_dump()
@@ -113,10 +112,9 @@ def add_admin_user(
         is_key_valid: str = Depends(validate_admin_api_key),
 ) -> JSONResponse:
     logger.info(f"Add admin user request for {user_data.email}")
-    _auth_service = AdminUserAuthService()
 
     if is_key_valid:
-        response: dict = _auth_service.add_admin_user(
+        response: dict = admin_user_auth_service.add_admin_user(
             user_data.email,
             user_data.password
         )
@@ -139,16 +137,15 @@ def add_admin_user(
         ).model_dump()
     )
 
-@admin_user_auth_router.post("/remove_admin_user", tags=["Admin User Auth"])
+@admin_user_auth_router.delete("/remove_admin_user", tags=["Admin User Auth"])
 def remove_admin_user(
         user_data: RemoveAdminUserModel,
         is_key_valid: str = Depends(validate_admin_api_key),
 ) -> JSONResponse:
     logger.info(f"Remove admin user request for {user_data.user_uid}")
-    _auth_service = AdminUserAuthService()
 
     if is_key_valid:
-        response: dict = _auth_service.remove_admin_user(
+        response: dict = admin_user_auth_service.remove_admin_user(
             user_data.user_uid
         )
         return JSONResponse(

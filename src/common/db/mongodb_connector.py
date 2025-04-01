@@ -4,6 +4,6 @@ from ..meta.singleton_meta import SingletonMeta
 
 from pymongo import AsyncMongoClient
 
-class MongoDBConnector(metaclass=SingletonMeta):
+class MongoDBConnector:
     def __init__(self):
         self.client: AsyncMongoClient = AsyncMongoClient(os.getenv("MONGO_URI"))

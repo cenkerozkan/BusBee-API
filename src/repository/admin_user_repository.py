@@ -10,9 +10,8 @@ class AdminUserRepository(RepositoryBaseClass):
         self._logger = get_logger(__name__)
         self._db = MongoDBConnector().client["bus_ops"]
         self._collection = self._db["admin_users"]
-        asyncio.run(self._ensure_db_setup())
 
-    async def _ensure_db_setup(self) -> None:
+    async def ensure_db_setup(self) -> None:
         self._logger.info("Ensuring database setup")
         try:
             # List all databases
@@ -32,13 +31,7 @@ class AdminUserRepository(RepositoryBaseClass):
                                 "created_at": {"bsonType": "string"},
                                 "last_active": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"},
-                                "saved_routes": {
-                                    "bsonType": "array",
-                                    "items": {
-                                        "bsonType": "object"
-                                    }
-                                }
+                                "email": {"bsonType": "string"}
                             }
                         }
                     }
@@ -47,7 +40,7 @@ class AdminUserRepository(RepositoryBaseClass):
 
             # Check if collection exists
             collections = await self._db.list_collection_names()
-            if "end_users" not in collections:
+            if "admin_users" not in collections:
                 await self._db.create_collection(
                     "end_users",
                     validator={
@@ -59,13 +52,7 @@ class AdminUserRepository(RepositoryBaseClass):
                                 "created_at": {"bsonType": "string"},
                                 "last_active": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"},
-                                "saved_routes": {
-                                    "bsonType": "array",
-                                    "items": {
-                                        "bsonType": "object"
-                                    }
-                                }
+                                "email": {"bsonType": "string"}
                             }
                         }
                     }
@@ -159,3 +146,5 @@ class AdminUserRepository(RepositoryBaseClass):
             return False
 
         return True
+
+admin_user_repository = AdminUserRepository()

@@ -3,13 +3,13 @@ import asyncio
 from ..common.db.mongodb_connector import MongoDBConnector
 from ..common.base.repository_base_class import RepositoryBaseClass
 from ..common.util.logger import get_logger
-from ..common.db.model.end_user_model import EndUserModel
+from ..common.db.model.driver_user_model import DriverUserModel
 
-class EndUserRepository(RepositoryBaseClass):
+class DriverUserRepository(RepositoryBaseClass):
     def __init__(self):
         self._logger = get_logger(__name__)
         self._db = MongoDBConnector().client["bus_ops"]
-        self._collection = self._db["end_users"]
+        self._collection = self._db["driver_users"]
 
     async def ensure_db_setup(self) -> None:
         self._logger.info("Ensuring database setup")
@@ -21,17 +21,20 @@ class EndUserRepository(RepositoryBaseClass):
             if "bus_ops" not in db_list:
                 self._logger.warn("Creating new database")
                 await self._db.command({
-                    "create": "end_users",
+                    "create": "driver_users",
                     "validator": {
                         "$jsonSchema": {
                             "bsonType": "object",
-                            "required": ["uid", "created_at", "last_active", "email"],
+                            "required": ["uid", "first_name", "last_name", "phone_number", "role", "assigned_route",
+                                         "vehicle"],
                             "properties": {
                                 "uid": {"bsonType": "string"},
-                                "created_at": {"bsonType": "string"},
-                                "last_active": {"bsonType": "string"},
+                                "first_name": {"bsonType": "string"},
+                                "last_name": {"bsonType": "string"},
+                                "phone_number": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"}
+                                "assigned_route": {"bsonType": "object"},
+                                "vehicle": {"bsonType": "object"}
                             }
                         }
                     }
@@ -40,29 +43,31 @@ class EndUserRepository(RepositoryBaseClass):
 
             # Check if collection exists
             collections = await self._db.list_collection_names()
-            if "end_users" not in collections:
+            if "driver_users" not in collections:
                 await self._db.create_collection(
-                    "end_users",
+                    "driver_users",
                     validator={
                         "$jsonSchema": {
                             "bsonType": "object",
-                            "required": ["uid", "created_at", "last_active", "email"],
+                            "required": ["uid", "first_name", "last_name", "phone_number", "role", "assigned_route",
+                                         "vehicle"],
                             "properties": {
                                 "uid": {"bsonType": "string"},
-                                "created_at": {"bsonType": "string"},
-                                "last_active": {"bsonType": "string"},
+                                "first_name": {"bsonType": "string"},
+                                "last_name": {"bsonType": "string"},
+                                "phone_number": {"bsonType": "string"},
                                 "role": {"bsonType": "string"},
-                                "email": {"bsonType": "string"}
+                                "assigned_route": {"bsonType": "object"},
+                                "vehicle": {"bsonType": "object"}
                             }
                         }
                     }
                 )
-                self._logger.info("Created end_users collection")
+                self._logger.info("Created driver_users collection")
 
             # Create indexes
             await self._collection.create_index("uid", unique=True)
-            await self._collection.create_index("email", unique=True)
-            self._logger.info("Created indexes on uid and email")
+            self._logger.info("Created index on uid")
 
             self._logger.info("Database setup completed successfully")
         except Exception as e:
@@ -89,17 +94,28 @@ class EndUserRepository(RepositoryBaseClass):
     ):
         pass
 
-    async def get_all(self):
-        pass
-
-    async def get_one(
-            self,
-            email: str
-    ) -> EndUserModel | None:
-        self._logger.info(f"Getting user for email: {email}")
+    async def get_all(self) -> list[DriverUserModel]:
+        result: list = []
         try:
-            user = await self._collection.find_one({"email": email})
-            return EndUserModel(**user)
+            self._logger.info("Getting all users")
+            drivers = self._collection.find()
+            async for driver in drivers:
+                result.append(DriverUserModel(**driver))
+        
+        except Exception as e:
+            self._logger.error(f"Failed to get documents: {e}")
+            return []
+
+        return result
+
+    async def get_one_by_uid(
+            self,
+            uid: str
+    ) -> DriverUserModel | None:
+        self._logger.info(f"Getting user for uid: {uid}")
+        try:
+            user = await self._collection.find_one({"uid": uid})
+            return DriverUserModel(**user)
 
         except Exception as e:
             self._logger.error(f"Failed to get document: {e}")
@@ -109,14 +125,22 @@ class EndUserRepository(RepositoryBaseClass):
     async def update_one(
             self,
             document
-    ):
-        pass
+    ) -> bool:
+        self._logger.info(f"Updating user with uid: {document.uid}")
+        try:
+            await self._collection.update_one({"uid": document.uid}, {"$set": document.dict()})
+
+        except Exception as e:
+            self._logger.error(f"Failed to update document: {e}")
+            return False
+
+        return True
 
     async def update_many(
             self,
             document
     ):
-        pass
+        await super().update_many(document)
 
     async def delete_one_by_uid(
             self,
@@ -136,14 +160,6 @@ class EndUserRepository(RepositoryBaseClass):
             self,
             email: str
     ) -> bool:
-        self._logger.info(f"Deleting user with email: {email}")
-        try:
-            await self._collection.delete_one({"email": email})
+        raise NotImplementedError()
 
-        except Exception as e:
-            self._logger.error(f"Failed to delete document: {e}")
-            return False
-
-        return True
-
-end_user_repository = EndUserRepository()
+driver_user_repository = DriverUserRepository()

@@ -1,10 +1,9 @@
 import datetime as dt
 import asyncio
 
-from ..common.meta.singleton_meta import SingletonMeta
-from ..common.firebase.firebase_handler import FirebaseHandler
+from ..common.firebase.firebase_handler import firebase_handler
 from ..common.db.model.end_user_model import EndUserModel
-from ..repository.end_user_repository import EndUserRepository
+from ..repository.end_user_repository import end_user_repository
 from ..common.util.logger import get_logger
 from ..common.util.error_messages import get_error_message
 
@@ -16,11 +15,11 @@ from pprint import pprint
 #       and password reset
 
 # TODO: Do not forget to implement mongodb hashing.
-class EndUserAuthService(metaclass=SingletonMeta):
+class EndUserAuthService:
     def __init__(self):
         self._logger = get_logger(__name__)
-        self._auth_handler = FirebaseHandler()
-        self._end_user_repository = EndUserRepository()
+        self._auth_handler = firebase_handler
+        self._end_user_repository = end_user_repository
 
     def login(
             self,
@@ -148,7 +147,7 @@ class EndUserAuthService(metaclass=SingletonMeta):
     def delete_account(
             self,
             user_uid: str
-    ):
+    ) -> bool:
         self._logger.info(f"Delete account request for {user_uid}")
         try:
             self._auth_handler.delete_user(user_uid)
@@ -166,3 +165,6 @@ class EndUserAuthService(metaclass=SingletonMeta):
     ) -> bool:
         result: bool = self._auth_handler.validate_token(token)
         return result
+
+
+end_user_auth_service = EndUserAuthService()

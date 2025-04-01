@@ -8,17 +8,23 @@ import requests
 
 from ..meta.singleton_meta import SingletonMeta
 from src.common.util.logger import get_logger
+from src.common.db.firebase_connector import _firebase_connector
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from firebase_admin.auth import *
 import os
+from dotenv import load_dotenv
 
-class FirebaseHandler(metaclass=SingletonMeta):
+load_dotenv()
+FIREBASE_APP = _firebase_connector
+
+class FirebaseHandler:
     def __init__(
             self
     ):
+        self._logger = get_logger(__name__)
         self._cred: credentials.Certificate = credentials.Certificate(
             {
                 "type": os.getenv("TYPE"),
@@ -34,9 +40,8 @@ class FirebaseHandler(metaclass=SingletonMeta):
                 "universe_domain": os.getenv("UNIVERSE_DOMAIN"),
             }
         )
-        self._app: firebase_admin = firebase_admin.initialize_app(self._cred)
+        self._app = FIREBASE_APP
         self._api_key: str = os.getenv("WEB_API_KEY")
-        self._logger = get_logger(__name__)
 
     def _post_request_executor(
             self,
@@ -145,3 +150,46 @@ class FirebaseHandler(metaclass=SingletonMeta):
         )
         result.update({"uid": new_admin_user.uid})
         return result
+
+    def create_driver_user(
+            self,
+            phone_number: str,
+            password: str
+    ) -> dict:
+        result: dict = {
+            "uid": "",
+            "phone_number": phone_number,
+        }
+        new_driver_user = auth.create_user(
+            phone_number=phone_number,
+            password=password,
+            app=self._app
+        )
+
+        result.update({"uid": new_driver_user.uid, "phone_number": new_driver_user.phone_number})
+        return result
+
+    def remove_driver_user(
+            self,
+            user_uid: str
+    ) -> bool:
+        auth.delete_user(user_uid, app=self._app)
+        return True
+
+    def update_driver_password(
+            self,
+            user_uid: str,
+            new_password: str
+    ) -> bool:
+        auth.update_user(user_uid, password=new_password, app=self._app)
+        return True
+
+    def update_driver_phone_number(
+            self,
+            user_uid: str,
+            new_phone_number: str
+    ) -> bool:
+        auth.update_user(user_uid, phone_number=new_phone_number, app=self._app)
+        return True
+
+firebase_handler = FirebaseHandler()

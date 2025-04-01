@@ -2,7 +2,7 @@ import time
 import asyncio
 
 from src.common.util.logger import get_logger
-from ...repository.end_user_repository import EndUserRepository
+from ...repository.end_user_repository import end_user_repository
 
 from firebase_admin import auth
 
@@ -13,7 +13,6 @@ def delete_unverified_email(
         email: str
 ) -> None:
     logger.info("Deleting unverified email")
-    end_user_repository = EndUserRepository()
     time.sleep(300)
     user = auth.get_user_by_email(email)
     if not user.email_verified:

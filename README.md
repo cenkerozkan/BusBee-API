@@ -488,7 +488,7 @@ All responses follow the `ResponseModel` format:
 ```
 
 ### Remove Admin User
-`POST /api/auth/admin_user/remove_admin_user`
+`DELETE /api/auth/admin_user/remove_admin_user`
 
 **Request Body:**
 ```json

@@ -1,14 +1,17 @@
 import re
+import asyncio
 
 from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from ..common.request_model.auth_route_model import *
+from ..common.request_model.auth_route_models import *
 from ..service.end_user_auth_service import EndUserAuthService
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.background_tasks import delete_unverified_email
 from ..common.util.logger import get_logger
+
+from ..service.end_user_auth_service import end_user_auth_service
 
 logger = get_logger(__name__)
 
@@ -19,7 +22,6 @@ def login(
         user_data: LoginRequest
 ) -> JSONResponse:
     logger.info(f"Login request for {user_data.email}")
-    _end_user_auth_service = EndUserAuthService()
 
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
@@ -34,7 +36,7 @@ def login(
             ).model_dump()
         )
 
-    login_result:dict = _end_user_auth_service.login(user_data.email, user_data.password)
+    login_result:dict = end_user_auth_service.login(user_data.email, user_data.password)
     return JSONResponse(
         status_code=login_result.get("code"),
         headers={"refresh_token": login_result.get("refresh_token"),
@@ -53,7 +55,6 @@ def register(
         background_tasks: BackgroundTasks
 ) -> JSONResponse:
     logger.info(f"Register request for {user_data.email}")
-    _auth_service = EndUserAuthService()
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):
         return JSONResponse(
@@ -66,7 +67,7 @@ def register(
             ).model_dump()
         )
 
-    register_result: dict = _auth_service.register(user_data.email, user_data.password)
+    register_result: dict = end_user_auth_service.register(user_data.email, user_data.password)
     # If success
     if register_result.get("success"):
         background_tasks.add_task(delete_unverified_email, user_data.email)
@@ -89,8 +90,8 @@ def logout(
 ) -> JSONResponse:
     logger.info(f"Logout request for {logout_data.user_uid}")
     jwt = jwt.credentials
-    _auth_service = EndUserAuthService()
-    logout_result: bool = _auth_service.logout(logout_data.user_uid)
+    end_user_auth_service = EndUserAuthService()
+    logout_result: bool = end_user_auth_service.logout(logout_data.user_uid)
     return JSONResponse(
         status_code=200 if logout_result else 500,
         content=ResponseModel(
@@ -108,8 +109,7 @@ def delete_account(
 ) -> JSONResponse:
     jwt = jwt.credentials
     logger.info(f"Delete account request for {jwt}")
-    _auth_service = EndUserAuthService()
-    delete_result: bool = _auth_service.delete_account(delete_data.user_uid)
+    delete_result: bool = end_user_auth_service.delete_account(delete_data.user_uid)
     return JSONResponse(
         status_code=200 if delete_result else 500,
         content=ResponseModel(
@@ -126,12 +126,11 @@ def validate_token(
 ) -> JSONResponse:
     jwt = jwt.credentials
     logger.info(f"Validate token request for {jwt}")
-    _auth_service = EndUserAuthService()
     return JSONResponse(
-        status_code=200 if _auth_service.validate_token(jwt) else 401,
+        status_code=200 if end_user_auth_service.validate_token(jwt) else 401,
         content=ResponseModel(
-            success=_auth_service.validate_token(jwt),
-            message="Token is valid" if _auth_service.validate_token(jwt) else "Token is invalid",
+            success=end_user_auth_service.validate_token(jwt),
+            message="Token is valid" if end_user_auth_service.validate_token(jwt) else "Token is invalid",
             data={},
             error=""
         ).model_dump()
