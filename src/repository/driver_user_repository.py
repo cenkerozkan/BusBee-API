@@ -25,8 +25,7 @@ class DriverUserRepository(RepositoryBaseClass):
                     "validator": {
                         "$jsonSchema": {
                             "bsonType": "object",
-                            "required": ["uid", "first_name", "last_name", "phone_number", "role", "assigned_route",
-                                         "vehicle"],
+                            "required": ["uid", "first_name", "last_name", "phone_number", "role"],
                             "properties": {
                                 "uid": {"bsonType": "string"},
                                 "first_name": {"bsonType": "string"},
@@ -49,8 +48,7 @@ class DriverUserRepository(RepositoryBaseClass):
                     validator={
                         "$jsonSchema": {
                             "bsonType": "object",
-                            "required": ["uid", "first_name", "last_name", "phone_number", "role", "assigned_route",
-                                         "vehicle"],
+                            "required": ["uid", "first_name", "last_name", "phone_number", "role"],
                             "properties": {
                                 "uid": {"bsonType": "string"},
                                 "first_name": {"bsonType": "string"},
