@@ -1,9 +1,10 @@
 # Backend
+
 Backend of the Atılım Service Management Project
 
 # Bus Operations API Documentation
 
-A FastAPI-based authentication and user management system with support for End Users and Admin Users.
+A FastAPI-based authentication and user management system with support for End Users, Admin Users, and Driver Users.
 
 ## Base URL
 ```
@@ -32,15 +33,23 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Validate Admin Token](#validate-admin-token)
   - [Add Admin User](#add-admin-user)
   - [Remove Admin User](#remove-admin-user)
+- [Admin Driver Management Endpoints](#admin-driver-management-endpoints)
+  - [Get All Drivers](#get-all-drivers)
+  - [Add Driver](#add-driver)
+  - [Delete Driver](#delete-driver)
+  - [Update Driver Password](#update-driver-password)
+  - [Update Driver Phone Number](#update-driver-phone-number)
 - [Data Models](#data-models)
   - [End User Model](#end-user-model)
   - [Admin User Model](#admin-user-model)
+  - [Driver User Model](#driver-user-model)
 
 ## Authentication Services
 
-The API implements two separate authentication services:
+The API implements three separate authentication services:
 - End User Authentication Service
 - Admin User Authentication Service
+- Driver User Management Service
 
 Each service has its own MongoDB collection and Firebase authentication integration.
 
@@ -528,6 +537,227 @@ All responses follow the `ResponseModel` format:
 }
 ```
 
+## Admin Driver Management Endpoints
+
+### Get All Drivers
+`GET /api/admin/management/get_all_drivers`
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with list of drivers
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Drivers retrieved",
+  "data": {
+    "drivers": [
+      {
+        "uid": "driver-uid-123",
+        "first_name": "John",
+        "last_name": "Doe",
+        "phone_number": "+905551234567",
+        "role": "DRIVER_USER",
+        "assigned_route": {},
+        "vehicle": null
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Error Response:**
+- 500: Failed to get drivers
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Failed to get drivers",
+  "data": null,
+  "error": "DATABASE_ERROR"
+}
+```
+
+### Add Driver
+`POST /api/admin/management/add_driver`
+
+**Request Body:**
+```json
+{
+  "first_name": "string",
+  "last_name": "string",
+  "phone_number": "string",
+  "password": "string"
+}
+```
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with new driver data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Driver user added",
+  "data": {
+    "uid": "driver-uid-123",
+    "first_name": "John",
+    "last_name": "Doe",
+    "phone_number": "+905551234567",
+    "role": "DRIVER_USER",
+    "assigned_route": {},
+    "vehicle": null
+  },
+  "error": null
+}
+```
+
+**Error Responses:**
+- 400: Invalid phone number format
+- 500: Failed to create driver user
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Invalid phone number format",
+  "data": null,
+  "error": null
+}
+```
+
+### Delete Driver
+`DELETE /api/admin/management/delete_driver`
+
+**Request Body:**
+```json
+{
+  "uid": "string"
+}
+```
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Driver user deleted",
+  "data": {},
+  "error": null
+}
+```
+
+**Error Response:**
+- 500: Failed to delete driver user
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Failed to delete driver user",
+  "data": null,
+  "error": null
+}
+```
+
+### Update Driver Password
+`PATCH /api/admin/management/update_driver_password`
+
+**Request Body:**
+```json
+{
+  "uid": "string",
+  "new_password": "string"
+}
+```
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Driver password updated",
+  "data": {},
+  "error": null
+}
+```
+
+**Error Response:**
+- 500: Failed to update driver password
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Failed to update driver password",
+  "data": null,
+  "error": "PASSWORD_POLICY_VIOLATION"
+}
+```
+
+### Update Driver Phone Number
+`PATCH /api/admin/management/update_driver_phone_number`
+
+**Request Body:**
+```json
+{
+  "uid": "string",
+  "new_phone_number": "string"
+}
+```
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with updated driver data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Driver phone number updated",
+  "data": {},
+  "error": null
+}
+```
+
+**Error Response:**
+- 500: Failed to update driver phone number
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Failed to update driver phone number",
+  "data": null,
+  "error": "failed_to_update_driver_phone_number"
+}
+```
+
 ## Data Models
 
 ### End User Model
@@ -537,12 +767,7 @@ All responses follow the `ResponseModel` format:
   "created_at": "string",
   "last_active": "string",
   "role": "END_USER",
-  "email": "string",
-  "saved_routes": [
-    {
-      "route_name": "string"
-    }
-  ]
+  "email": "string"
 }
 ```
 
@@ -554,5 +779,18 @@ All responses follow the `ResponseModel` format:
   "last_active": "string",
   "role": "ADMIN_USER",
   "email": "string"
+}
+```
+
+### Driver User Model
+```json
+{
+  "uid": "string",
+  "first_name": "string",
+  "last_name": "string",
+  "phone_number": "string",
+  "role": "DRIVER_USER",
+  "assigned_route": {},
+  "vehicle": null
 }
 ```

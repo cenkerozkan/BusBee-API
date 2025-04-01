@@ -12,7 +12,7 @@ from ..common.util.logger import get_logger
 from ..common.util.get_admin_api_key import validate_admin_api_key
 from ..common.request_model.admin_driver_management_models import *
 
-from ..service.admin_management_service import admin_management_service
+from ..service.admin_driver_management_service import admin_management_service
 
 logger = get_logger(__name__)
 

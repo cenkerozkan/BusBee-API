@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from src.common.response_model.response_model import ResponseModel
 from src.routes.end_user_auth_route import end_user_auth_router
 from src.routes.admin_user_auth_route import admin_user_auth_router
-from src.routes.admin_management_route import admin_driver_management_router
+from src.routes.admin_driver_management_route import admin_driver_management_router
 from src.repository.end_user_repository import end_user_repository
 from src.repository.admin_user_repository import admin_user_repository
 from src.repository.driver_user_repository import driver_user_repository
