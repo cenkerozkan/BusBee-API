@@ -67,7 +67,6 @@ class EndUserRepository(RepositoryBaseClass):
             self._logger.info("Database setup completed successfully")
         except Exception as e:
             self._logger.error(f"Database setup error: {e}")
-            raise Exception(f"Failed to setup database: {e}")
 
     async def insert_one(
             self,

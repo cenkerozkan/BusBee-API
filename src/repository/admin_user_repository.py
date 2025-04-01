@@ -21,7 +21,7 @@ class AdminUserRepository(RepositoryBaseClass):
             if "bus_ops" not in db_list:
                 self._logger.warn("Creating new database")
                 await self._db.command({
-                    "create": "end_users",
+                    "create": "admin_users",
                     "validator": {
                         "$jsonSchema": {
                             "bsonType": "object",
@@ -42,7 +42,7 @@ class AdminUserRepository(RepositoryBaseClass):
             collections = await self._db.list_collection_names()
             if "admin_users" not in collections:
                 await self._db.create_collection(
-                    "end_users",
+                    "admin_users",
                     validator={
                         "$jsonSchema": {
                             "bsonType": "object",
@@ -67,7 +67,6 @@ class AdminUserRepository(RepositoryBaseClass):
             self._logger.info("Database setup completed successfully")
         except Exception as e:
             self._logger.error(f"Database setup error: {e}")
-            raise Exception(f"Failed to setup database: {e}")
 
     async def insert_one(
             self,
