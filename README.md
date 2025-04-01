@@ -562,7 +562,6 @@ All responses follow the `ResponseModel` format:
         "last_name": "Doe",
         "phone_number": "+905551234567",
         "role": "DRIVER_USER",
-        "assigned_route": {},
         "vehicle": null
       }
     ]

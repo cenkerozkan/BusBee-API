@@ -5,7 +5,6 @@ class AddDriverUserModel(BaseModel):
     last_name: str
     phone_number: str
     password: str
-    assigned_route: dict
 
 class DeleteDriverUserModel(BaseModel):
     uid: str
