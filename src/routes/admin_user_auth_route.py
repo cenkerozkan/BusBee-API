@@ -166,3 +166,28 @@ def remove_admin_user(
             error=""
         ).model_dump()
     )
+
+@admin_user_auth_router.get("/get_all_admins", tags=["Admin User Auth"])
+async def get_all_admins(is_key_valid: str = Depends(validate_admin_api_key)) -> JSONResponse:
+    logger.info(f"is key valid: {is_key_valid}")
+    if is_key_valid:
+        response: dict = await admin_user_auth_service.get_all_admins()
+        return JSONResponse(
+            status_code=response.get("code"),
+            content=ResponseModel(
+                success=response.get("success"),
+                message=response.get("message"),
+                data=response.get("data"),
+                error=response.get("error")
+            ).model_dump()
+        )
+
+    return JSONResponse(
+        status_code=403,
+        content=ResponseModel(
+            success=False,
+            message="Unauthorized",
+            data={},
+            error=""
+        ).model_dump()
+    )

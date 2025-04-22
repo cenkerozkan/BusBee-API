@@ -2,6 +2,8 @@ import datetime as dt
 import asyncio
 from operator import is_not
 
+from starlette.responses import JSONResponse
+
 from ..common.meta.singleton_meta import SingletonMeta
 from ..common.firebase.firebase_handler import firebase_handler
 from ..common.db.model.admin_user_model import AdminUserModel
@@ -184,6 +186,45 @@ class AdminUserAuthService:
                     "message": "Admin user removed"
                 }
             )
+        return result
+
+    async def get_all_admins(self) -> dict:
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+        admins: list[AdminUserModel] | None
+
+        try:
+            admins = await self._admin_user_repository.get_all()
+
+        except Exception as e:
+            self._logger.error(f"Failed to get all admins: {e}")
+            result.update({"code": 500, "success": False, "message": str(e)})
+            return result
+
+        if len(admins) == 0:
+            result.update(
+                {
+                    "code": 404,
+                    "success": False,
+                    "message": "No admins found",
+                    "error": "",
+                }
+            )
+            return result
+
+        result.update(
+            {
+                "code": 200,
+                "success": True,
+                "message": "Admins retrieved",
+                "data": {"admins": admins}
+            }
+        )
         return result
 
 admin_user_auth_service = AdminUserAuthService()

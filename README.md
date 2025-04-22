@@ -33,6 +33,7 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Validate Admin Token](#validate-admin-token)
   - [Add Admin User](#add-admin-user)
   - [Remove Admin User](#remove-admin-user)
+  - [Get All Admins](#get-all-admins)
 - [Admin Driver Management Endpoints](#admin-driver-management-endpoints)
   - [Get All Drivers](#get-all-drivers)
   - [Add Driver](#add-driver)
@@ -534,6 +535,51 @@ All responses follow the `ResponseModel` format:
   "message": "Failed to remove admin user",
   "data": null,
   "error": "UNAUTHORIZED_ACCESS"
+}
+```
+
+### Get All Admins
+`GET /api/auth/admin_user/get_all_admins`
+
+Retrieves all registered admin users.
+
+**Headers:**
+- `ADMIN-API-KEY`: Admin API key
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with list of admin users
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Admins retrieved",
+  "data": {
+    "admins": [
+      {
+        "uid": "admin-uid-123",
+        "created_at": "2025-03-29T10:00:00",
+        "last_active": "2025-03-29T10:00:00",
+        "role": "ADMIN_USER",
+        "email": "admin@example.com"
+      }
+    ]
+  },
+  "error": null
+} 
+```
+**Error Response:**
+- 403: Unauthorized
+- 404 : No admins found
+- 500: Failed to get admins
+
+```json
+{
+  "success": false,
+  "message": "Failed to get admins",
+  "data": null,
+  "error": "ERROR"
 }
 ```
 

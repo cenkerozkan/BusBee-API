@@ -73,9 +73,19 @@ class AdminUserRepository(RepositoryBaseClass):
     ):
         pass
 
-    async def get_all(self):
-        # TODO: Implement this.
-        pass
+    async def get_all(self) -> list | None:
+        self._logger.info("Getting all admins")
+        result: list[AdminUserModel] = []
+        try:
+            query = self._collection.find()
+            async for document in query:
+                result.append(AdminUserModel(**document))
+
+        except Exception as e:
+            self._logger.error(f"Failed to get all admins: {e}")
+            return None
+
+        return result
 
     async def get_one(
             self,
@@ -130,5 +140,6 @@ class AdminUserRepository(RepositoryBaseClass):
             return False
 
         return True
+
 
 admin_user_repository = AdminUserRepository()
