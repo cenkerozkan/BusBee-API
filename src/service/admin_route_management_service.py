@@ -171,3 +171,5 @@ class AdminRouteManagementService:
             })
 
         return result
+
+admin_route_management_service = AdminRouteManagementService()

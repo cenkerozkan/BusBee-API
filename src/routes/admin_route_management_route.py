@@ -5,12 +5,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from ..common.request_model.admin_route_management_models import NewRoute, UpdateRouteModel
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.logger import get_logger
-from ..service.admin_route_management_service import AdminRouteManagementService
+from ..service.admin_route_management_service import admin_route_management_service
 
 logger = get_logger(__name__)
 
 admin_route_management_router = APIRouter(prefix="/admin/management/route", tags=["Admin Route Management"])
-admin_route_service = AdminRouteManagementService()
 
 @admin_route_management_router.post("/create", tags=["Admin Route Management"])
 async def create_route(
@@ -18,7 +17,7 @@ async def create_route(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     logger.info(f"Create route request for route: {route_data.route_name}")
-    result: dict = await admin_route_service.create_route(route_data)
+    result: dict = await admin_route_management_service.create_route(route_data)
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
@@ -35,7 +34,7 @@ async def delete_route(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     logger.info(f"Delete route request for route id: {route_id}")
-    result: dict = await admin_route_service.delete_route_by_id(route_id)
+    result: dict = await admin_route_management_service.delete_route_by_id(route_id)
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
@@ -52,7 +51,7 @@ async def delete_route_by_name(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     logger.info(f"Delete route request for route name: {route_name}")
-    result: dict = await admin_route_service.delete_route_by_name(route_name)
+    result: dict = await admin_route_management_service.delete_route_by_name(route_name)
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
@@ -69,7 +68,7 @@ async def update_route(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     logger.info(f"Update route request for route: {route_data.route_name}")
-    result: dict = await admin_route_service.update_route(route_data)
+    result: dict = await admin_route_management_service.update_route(route_data)
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
@@ -85,7 +84,7 @@ async def get_all_routes(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
     logger.info("Get all routes request")
-    result: dict = await admin_route_service.get_all_routes()
+    result: dict = await admin_route_management_service.get_all_routes()
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
