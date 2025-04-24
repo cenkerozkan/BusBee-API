@@ -8,7 +8,7 @@ import requests
 
 from ..meta.singleton_meta import SingletonMeta
 from src.common.util.logger import get_logger
-from src.common.db.firebase_connector import _firebase_connector
+from src.common.db.firebase_connector import firebase_connector
 
 import firebase_admin
 from firebase_admin import credentials
@@ -18,7 +18,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-FIREBASE_APP = _firebase_connector
+FIREBASE_APP = firebase_connector
 
 class FirebaseHandler:
     def __init__(

@@ -18,9 +18,10 @@ from pprint import pprint
 #       and password reset
 
 class AdminUserAuthService:
+    __slots__ = ("_logger", "_firebase_handler", "_admin_user_repository")
     def __init__(self):
         self._logger = get_logger(__name__)
-        self._auth_handler = firebase_handler
+        self._firebase_handler = firebase_handler
         self._admin_user_repository = admin_user_repository
 
     def login(
@@ -39,7 +40,7 @@ class AdminUserAuthService:
         }
         response: dict
         try:
-            response:dict = self._auth_handler.login(email, password)
+            response:dict = self._firebase_handler.login(email, password)
 
         except Exception as e:
             self._logger.error(f"Login failed: {e}")
@@ -63,7 +64,7 @@ class AdminUserAuthService:
                 }
             )
         else:
-            firebase_user_info: dict = self._auth_handler.get_user_info(email)
+            firebase_user_info: dict = self._firebase_handler.get_user_info(email)
             user_info: AdminUserModel = asyncio.run(self._admin_user_repository.get_one(email))
             result.update(
                 {
@@ -82,7 +83,7 @@ class AdminUserAuthService:
             user_uid: str
     ) -> bool:
         try:
-            logout_result: bool = self._auth_handler.logout(user_uid)
+            logout_result: bool = self._firebase_handler.logout(user_uid)
 
         except Exception as e:
             print("Error: ", e)
@@ -96,7 +97,7 @@ class AdminUserAuthService:
     ):
         self._logger.info(f"Delete account request for {user_uid}")
         try:
-            self._auth_handler.delete_user(user_uid)
+            self._firebase_handler.delete_user(user_uid)
             asyncio.run(self._admin_user_repository.delete_one_by_uid(user_uid))
 
         except Exception as e:
@@ -109,7 +110,7 @@ class AdminUserAuthService:
             self,
             token: str
     ) -> bool:
-        result: bool = self._auth_handler.validate_token(token)
+        result: bool = self._firebase_handler.validate_token(token)
         return result
 
     def add_admin_user(
@@ -129,7 +130,7 @@ class AdminUserAuthService:
         is_saved: bool
 
         try:
-            response = self._auth_handler.create_admin_user(email, password)
+            response = self._firebase_handler.create_admin_user(email, password)
 
         except Exception as e:
             self._logger.error(f"Failed to add admin user: {e}")
@@ -170,7 +171,7 @@ class AdminUserAuthService:
         is_deleted: bool = False
 
         try:
-            response = self._auth_handler.delete_user(user_uid)
+            response = self._firebase_handler.delete_user(user_uid)
             is_deleted = asyncio.run(self._admin_user_repository.delete_one_by_uid(user_uid))
 
         except Exception as e:

@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKeyHeader
-from starlette.responses import JSONResponse
 
 from ..common.request_model.auth_route_models import *
 from ..common.response_model.response_model import ResponseModel
@@ -16,9 +15,9 @@ from ..service.admin_driver_management_service import admin_management_service
 
 logger = get_logger(__name__)
 
-admin_driver_management_router = APIRouter(prefix="/admin/management", tags=["Admin Management"])
+admin_driver_management_router = APIRouter(prefix="/admin/management", tags=["Admin Driver Management"])
 
-@admin_driver_management_router.get("/get_all_drivers", tags=["Admin Management"])
+@admin_driver_management_router.get("/get_all_drivers", tags=["Admin Driver Management"])
 async def get_all_drivers(
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
@@ -34,7 +33,7 @@ async def get_all_drivers(
         ).model_dump()
     )
 
-@admin_driver_management_router.post("/add_driver", tags=["Admin Management"])
+@admin_driver_management_router.post("/add_driver", tags=["Admin Driver Management"])
 def add_driver(
         driver_data: AddDriverUserModel,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
@@ -61,7 +60,7 @@ def add_driver(
         ).model_dump()
     )
 
-@admin_driver_management_router.delete("/delete_driver", tags=["Admin Management"])
+@admin_driver_management_router.delete("/delete_driver", tags=["Admin Driver Management"])
 def delete_driver(
         driver_data: DeleteDriverUserModel,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
@@ -78,7 +77,7 @@ def delete_driver(
         ).model_dump()
 )
 
-@admin_driver_management_router.patch("/update_driver_password", tags=["Admin Management"])
+@admin_driver_management_router.patch("/update_driver_password", tags=["Admin Driver Management"])
 def update_driver_password(
         driver_data: UpdateDriverPasswordModel,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
@@ -95,7 +94,7 @@ def update_driver_password(
         ).model_dump()
     )
 
-@admin_driver_management_router.patch("/update_driver_phone_number", tags=["Admin Management"])
+@admin_driver_management_router.patch("/update_driver_phone_number", tags=["Admin Driver Management"])
 def update_driver_phone_number(
         driver_data: UpdateDriverPhoneNumberModel,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())

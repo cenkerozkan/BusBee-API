@@ -10,7 +10,8 @@ from ..common.util.logger import get_logger
 from ..common.util.error_messages import get_error_message
 
 
-class AdminManagementService:
+class AdminDriverManagementService:
+    __slots__ = ("_logger", "_firebase_handler", "_driver_user_repository")
     def __init__(self):
         self._logger = get_logger(__name__)
         self._firebase_handler = firebase_handler
@@ -221,4 +222,4 @@ class AdminManagementService:
         return result
 
 
-admin_management_service = AdminManagementService()
+admin_management_service = AdminDriverManagementService()

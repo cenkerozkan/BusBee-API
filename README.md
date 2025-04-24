@@ -40,10 +40,6 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Delete Driver](#delete-driver)
   - [Update Driver Password](#update-driver-password)
   - [Update Driver Phone Number](#update-driver-phone-number)
-- [Data Models](#data-models)
-  - [End User Model](#end-user-model)
-  - [Admin User Model](#admin-user-model)
-  - [Driver User Model](#driver-user-model)
 
 ## Authentication Services
 
@@ -68,10 +64,10 @@ The API implements global exception handling for HTTP errors with these status c
 All responses follow the `ResponseModel` format:
 ```json
 {
-  "success": boolean,
-  "message": string,
-  "data": object | null,
-  "error": string | null
+  "success": "boolean",
+  "message": "string",
+  "data": "object" | null,
+  "error": "string" | null
 }
 ```
 
@@ -803,39 +799,268 @@ Retrieves all registered admin users.
 }
 ```
 
-## Data Models
+## Admin Route Management Endpoints
 
-### End User Model
+### Get All Routes
+`GET /api/admin/management/route/get_all`
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with list of routes
+
+**Success Response Example:**
 ```json
 {
-  "uid": "string",
-  "created_at": "string",
-  "last_active": "string",
-  "role": "END_USER",
-  "email": "string"
+  "success": true,
+  "message": "Routes retrieved successfully",
+  "data": {
+    "routes": [
+      {
+        "uuid": "route-uuid-123",
+        "route_name": "Morning Express Route 1",
+        "created_at": "2024-03-29T10:00:00",
+        "updated_at": "2024-03-29T10:00:00",
+        "start_time": "08:00",
+        "stops": [
+          {
+            "lat": 41.0082,
+            "lon": 28.9784,
+            "stop_name": "Taksim Square"
+          },
+          {
+            "lat": 41.0055,
+            "lon": 28.9773,
+            "stop_name": "Galata Tower" 
+          }
+        ]
+      }
+    ]
+  },
+  "error": null
 }
 ```
 
-### Admin User Model
+**Error Response:**
+- 404: No routes found
+
+**Error Response Example:**
 ```json
 {
-  "uid": "string",
-  "created_at": "string",
-  "last_active": "string",
-  "role": "ADMIN_USER",
-  "email": "string"
+  "success": false,
+  "message": "No routes found",
+  "data": {
+    "routes": []
+  },
+  "error": null
+}
+```
+### Create Route
+`POST /api/admin/management/route/create`
+**Request Body:**
+```json
+{
+  "route_name": "string",
+  "start_time": "string",
+  "stops": [
+    {
+      "lat": 0,
+      "lon": 0,
+      "stop_name": "string"
+    }
+  ]
+}
+```
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with new route data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Route created successfully",
+  "data": {
+    "uuid": "route-uuid-123",
+    "route_name": "Morning Express Route 1",
+    "created_at": "2024-03-29T10:00:00",
+    "updated_at": "2024-03-29T10:00:00",
+    "start_time": "08:00",
+    "stops": [
+      {
+        "lat": 41.0082,
+        "lon": 28.9784,
+        "stop_name": "Taksim Square"
+      }
+    ]
+  },
+  "error": null
+}
+```
+**Error Response:**
+- 500: Failed to create route
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Route name already exists",
+  "data": {},
+  "error": ""
 }
 ```
 
-### Driver User Model
+### Update Route
+`PATCH /api/admin/management/route/update`
+
+**Request Body:**
 ```json
 {
-  "uid": "string",
-  "first_name": "string",
-  "last_name": "string",
-  "phone_number": "string",
-  "role": "DRIVER_USER",
-  "assigned_route": {},
-  "vehicle": null
+  "uuid": "string",
+  "route_name": "string",
+  "created_at": "string",
+  "updated_at": "string",
+  "start_time": "string",
+  "stops": [
+    {
+      "lat": 0,
+      "lon": 0,
+      "stop_name": "string"
+    }
+  ]
+}
+```
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with updated route data
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Document updated successfully",
+  "data": {
+    "route": {
+      "uuid": "defa555c-57b5-4453-9c9b-f01538824e37",
+      "route_name": "Weekend Special Route 6",
+      "created_at": "2025-04-24T22:01:15.333649",
+      "updated_at": "2025-04-24T22:12:19.359726",
+      "start_time": "10:15",
+      "stops": [
+        {
+          "lat": 41.0411,
+          "lon": 29.0084
+        },
+        {
+          "lat": 41.0483,
+          "lon": 29.0278
+        },
+        {
+          "lat": 41.0545,
+          "lon": 29.0497
+        },
+        {
+          "lat": 41.0858,
+          "lon": 29.0433
+        },
+        {
+          "lat": 41.108,
+          "lon": 29.0544
+        }
+      ]
+    }
+  },
+  "error": ""
+}
+```
+**Error Response:**
+- 500: Failed to update route
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Route does not exist",
+  "data": {},
+  "error": ""
+}
+```
+
+### Delete Route With Route ID
+`DELETE /api/admin/management/route/delete/{route_id}`
+
+**Parameters:**
+- `route_id`: UUID of the route to be deleted
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Route deleted successfully",
+  "data": {},
+  "error": ""
+}
+```
+**Error Response:**
+- 500: Failed to delete route
+- 404: Route not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Route not found",
+  "data": {},
+  "error": ""
+}
+```
+
+### Delete Route With Route Name
+`DELETE /api/admin/management/route/delete/{route_name}`
+
+**Parameters:**
+- `route_name`: UUID of the route to be deleted
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Route deleted successfully",
+  "data": {},
+  "error": ""
+}
+```
+**Error Response:**
+- 500: Failed to delete route
+- 404: Route not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Route not found",
+  "data": {},
+  "error": ""
 }
 ```

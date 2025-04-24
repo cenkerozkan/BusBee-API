@@ -10,15 +10,12 @@ from ..common.util.error_messages import get_error_message
 from pprint import pprint
 
 
-# TODO: After finishing firebase auth,
-#       look up for email verification
-#       and password reset
 
-# TODO: Do not forget to implement mongodb hashing.
 class EndUserAuthService:
+    __slots__ = ("_logger", "_firebase_handler", "_end_user_repository")
     def __init__(self):
         self._logger = get_logger(__name__)
-        self._auth_handler = firebase_handler
+        self._firebase_handler = firebase_handler
         self._end_user_repository = end_user_repository
 
     def login(
@@ -37,7 +34,7 @@ class EndUserAuthService:
         }
         response: dict
         try:
-            response:dict = self._auth_handler.login(email, password)
+            response:dict = self._firebase_handler.login(email, password)
 
         except Exception as e:
             self._logger.error(f"Login failed: {e}")
@@ -61,7 +58,7 @@ class EndUserAuthService:
                 }
             )
         else:
-            firebase_user_info: dict = self._auth_handler.get_user_info(email)
+            firebase_user_info: dict = self._firebase_handler.get_user_info(email)
             user_info: EndUserModel = asyncio.run(self._end_user_repository.get_one(email))
             result.update(
                 {
@@ -91,7 +88,7 @@ class EndUserAuthService:
         }
         response: dict
         try:
-            response = self._auth_handler.register(email, password)
+            response = self._firebase_handler.register(email, password)
 
         except Exception as e:
             result.update({"message": "Registration failed", "error": str(e)})
@@ -109,14 +106,13 @@ class EndUserAuthService:
 
         else:
             # Send verification email
-            self._auth_handler.send_verification_email(response.get("idToken"))
-            user_info: dict = self._auth_handler.get_user_info(email)
+            self._firebase_handler.send_verification_email(response.get("idToken"))
+            user_info: dict = self._firebase_handler.get_user_info(email)
             end_user_model = EndUserModel(
                 uid=user_info.get("userUid"),
                 created_at=str(dt.datetime.now().isoformat()),
                 last_active=str(dt.datetime.now().isoformat()),
                 email=email,
-                saved_routes=[]
             )
             is_saved: bool = asyncio.run(self._end_user_repository.insert_one(end_user_model.model_dump()))
             result.update(
@@ -136,7 +132,7 @@ class EndUserAuthService:
             user_uid: str
     ) -> bool:
         try:
-            logout_result: bool = self._auth_handler.logout(user_uid)
+            logout_result: bool = self._firebase_handler.logout(user_uid)
 
         except Exception as e:
             print("Error: ", e)
@@ -150,7 +146,7 @@ class EndUserAuthService:
     ) -> bool:
         self._logger.info(f"Delete account request for {user_uid}")
         try:
-            self._auth_handler.delete_user(user_uid)
+            self._firebase_handler.delete_user(user_uid)
             asyncio.run(self._end_user_repository.delete_one_by_uid(user_uid))
 
         except Exception as e:
@@ -163,7 +159,7 @@ class EndUserAuthService:
             self,
             token: str
     ) -> bool:
-        result: bool = self._auth_handler.validate_token(token)
+        result: bool = self._firebase_handler.validate_token(token)
         return result
 
 

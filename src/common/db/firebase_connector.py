@@ -31,4 +31,4 @@ class FirebaseConnector:
     def get_firebase_app(self):
         return self.app
 
-_firebase_connector = FirebaseConnector().get_firebase_app()
+firebase_connector = FirebaseConnector().get_firebase_app()
