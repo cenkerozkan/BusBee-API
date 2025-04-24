@@ -116,7 +116,9 @@ def add_admin_user(
     if is_key_valid:
         response: dict = admin_user_auth_service.add_admin_user(
             user_data.email,
-            user_data.password
+            user_data.password,
+            user_data.first_name,
+            user_data.last_name
         )
         return JSONResponse(
             status_code=response.get("code"),

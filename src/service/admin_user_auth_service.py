@@ -116,7 +116,9 @@ class AdminUserAuthService:
     def add_admin_user(
             self,
             email: str,
-            password: str
+            password: str,
+            first_name: str,
+            last_name: str
     ) -> dict:
         self._logger.info(f"Add admin user request for {email}")
         result: dict = {
@@ -141,6 +143,8 @@ class AdminUserAuthService:
             new_admin_user: AdminUserModel = AdminUserModel(
                 uid=response.get("uid"),
                 email=email,
+                first_name=first_name,
+                last_name=last_name,
                 created_at=str(dt.datetime.now().isoformat()),
                 last_active=str(dt.datetime.now().isoformat())
             )

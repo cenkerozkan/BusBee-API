@@ -452,7 +452,9 @@ All responses follow the `ResponseModel` format:
 ```json
 {
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "first_name": "string",
+  "last_name": "string"
 }
 ```
 
@@ -469,13 +471,15 @@ All responses follow the `ResponseModel` format:
   "success": true,
   "message": "Admin user added",
   "data": {
-    "uid": "new-admin-uid-123",
-    "created_at": "2025-03-29T10:00:00",
-    "last_active": "2025-03-29T10:00:00",
+    "uid": "cVqvd10OgahjsYtxV5EwzSDkGIw1",
+    "created_at": "2025-04-24T23:33:46.765910",
+    "last_active": "2025-04-24T23:33:46.765925",
+    "first_name": "Cenker",
+    "last_name": "Özkan",
     "role": "ADMIN_USER",
-    "email": "newadmin@example.com"
+    "email": "cenkerozkanse@gmail.com"
   },
-  "error": null
+  "error": ""
 }
 ```
 

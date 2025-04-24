@@ -20,6 +20,8 @@ class ValidateRequest(BaseModel):
 class AddAdminUserModel(BaseModel):
     email: str
     password: str
+    first_name: str
+    last_name: str
 
 class RemoveAdminUserModel(BaseModel):
     user_uid: str
