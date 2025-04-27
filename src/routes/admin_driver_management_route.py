@@ -93,3 +93,40 @@ def update_driver_phone_number(
             error=result.get("error")
         ).model_dump()
     )
+
+@admin_driver_management_router.patch("/assign_vehicle_to_driver", tags=["Admin Driver Management"])
+async def assign_vehicle_to_driver(
+        assignment_data: AssignVehicleToDriverModel,
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    logger.info(f"Assign vehicle request for driver UID: {assignment_data.driver_uid} and vehicle UUID: {assignment_data.vehicle_uuid}")
+    result: dict = await admin_management_service.assign_vehicle_to_driver(
+        assignment_data.driver_uid,
+        assignment_data.vehicle_uuid
+    )
+    return JSONResponse(
+        status_code=result.get("code"),
+        content=ResponseModel(
+            success=result.get("success"),
+            message=result.get("message"),
+            data=result.get("data"),
+            error=result.get("error")
+        ).model_dump()
+    )
+
+@admin_driver_management_router.patch("/remove_vehicle_from_driver/{driver_uid}", tags=["Admin Driver Management"])
+async def remove_vehicle_from_driver(
+        driver_uid: str,
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    logger.info(f"Remove vehicle from driver request for driver UID: {driver_uid}")
+    result: dict = await admin_management_service.remove_vehicle_from_driver(driver_uid)
+    return JSONResponse(
+        status_code=result.get("code"),
+        content=ResponseModel(
+            success=result.get("success"),
+            message=result.get("message"),
+            data=result.get("data"),
+            error=result.get("error")
+        ).model_dump()
+    )

@@ -18,6 +18,7 @@ from src.routes.admin_user_auth_route import admin_user_auth_router
 from src.routes.admin_driver_management_route import admin_driver_management_router
 from src.routes.admin_route_management_route import admin_route_management_router
 from src.routes.admin_vehicle_management_route import admin_vehicle_management_router
+from src.routes.driver_route import driver_router
 
 load_dotenv()
 
@@ -80,3 +81,4 @@ app.include_router(admin_user_auth_router)
 app.include_router(admin_driver_management_router)
 app.include_router(admin_route_management_router)
 app.include_router(admin_vehicle_management_router)
+app.include_router(driver_router)

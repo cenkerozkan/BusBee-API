@@ -10,8 +10,10 @@ services:
       - "8000:8000"
     depends_on:
       - mongodb
+      - redis
     environment:
       - MONGO_URI=mongodb://root:BusOps_3298%40@mongodb:27017/
+      - REDIS_URL=redis://default:BusOps_3298%40@redis:6379/0
     volumes:
       - .:/app
     command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
@@ -28,6 +30,14 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: BusOps_3298@
     volumes:
       - mongodb_data:/data/db
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: ["redis-server", "--requirepass", "BusOps_3298@"]
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   mongodb_data:

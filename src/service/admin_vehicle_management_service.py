@@ -4,7 +4,7 @@ import uuid
 from ..common.util.logger import get_logger
 from ..repository.vehicle_repository import vehicle_repository
 from ..repository.route_repository import route_repository
-from ..common.db.model.vehicle import Vehicle
+from ..common.db.model.vehicle_model import VehicleModel
 
 class AdminVehicleManagementService:
     def __init__(self):
@@ -20,7 +20,7 @@ class AdminVehicleManagementService:
             "error": "",
             "data": {}
         }
-        vehicle = Vehicle(
+        vehicle = VehicleModel(
             uuid=str(uuid.uuid4()),
             vehicle_brand=new_vehicle.vehicle_brand,
             vehicle_model=new_vehicle.vehicle_model,
@@ -92,7 +92,7 @@ class AdminVehicleManagementService:
             "error": "",
             "data": {}
         }
-        vehicle = Vehicle(**updated_vehicle.model_dump())
+        vehicle = VehicleModel(**updated_vehicle.model_dump())
         crud_result = await self._vehicle_repository.update_one(vehicle)
         if crud_result["success"]:
             result.update({

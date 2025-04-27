@@ -11,3 +11,7 @@ class DeleteDriverUserModel(BaseModel):
 class UpdateDriverPhoneNumberModel(BaseModel):
     uid: str
     new_phone_number: str
+
+class AssignVehicleToDriverModel(BaseModel):
+    driver_uid: str
+    vehicle_uuid: str

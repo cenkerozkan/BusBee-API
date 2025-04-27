@@ -2,7 +2,7 @@
 import uuid
 from ..common.base.repository_base_class import RepositoryBaseClass
 from ..common.util.logger import get_logger
-from ..common.db.model.vehicle import Vehicle
+from ..common.db.model.vehicle_model import VehicleModel
 from ..common.db.mongodb_connector import MongoDBConnector
 
 class VehicleRepository(RepositoryBaseClass):
@@ -72,11 +72,11 @@ class VehicleRepository(RepositoryBaseClass):
             result.update({"success": False, "message": "Failed to create vehicle", "error": str(e)})
         return result
 
-    async def get_all(self) -> list[Vehicle]:
+    async def get_all(self) -> list[VehicleModel]:
         try:
-            vehicles = []
+            vehicles: list = []
             async for vehicle in self._collection.find():
-                vehicles.append(Vehicle(**vehicle))
+                vehicles.append(VehicleModel(**vehicle))
             return vehicles
         except Exception as e:
             self._logger.error(f"Failed to get vehicles: {e}")
@@ -84,7 +84,7 @@ class VehicleRepository(RepositoryBaseClass):
 
     async def update_one(
             self,
-            document: Vehicle
+            document: VehicleModel
     ) -> dict:
         result = {"success": False, "message": "", "error": ""}
         try:
@@ -164,12 +164,12 @@ class VehicleRepository(RepositoryBaseClass):
     async def get_by_route_uuid(
             self,
             route_uuid: str
-    ) -> list[Vehicle]:
+    ) -> list[VehicleModel]:
         try:
             vehicles = []
             cursor = self._collection.find({"route_uuids": route_uuid})
             async for vehicle in cursor:
-                vehicles.append(Vehicle(**vehicle))
+                vehicles.append(VehicleModel(**vehicle))
             return vehicles
         except Exception as e:
             self._logger.error(f"Failed to get vehicles by route UUID: {e}")

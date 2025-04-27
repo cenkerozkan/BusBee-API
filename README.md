@@ -38,6 +38,8 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Add Driver](#add-driver)
   - [Delete Driver](#delete-driver)
   - [Update Driver Phone Number](#update-driver-phone-number)
+  - [Assign Vehicle to Driver](#assign-vehicle-to-driver)
+  - [Remove Vehicle from Driver](#remove-vehicle-from-driver)
 - [Admin Route Management Endpoints](#admin-route-management-endpoints)
   - [Get All Routes](#get-all-routes)
   - [Create Route](#create-route)
@@ -51,6 +53,7 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Delete Vehicle](#delete-vehicle)
   - [Delete Vehicle by Plate Number](#delete-vehicle-by-plate-number)
   - [Assign Routes to Vehicle](#assign-routes-to-vehicle)
+- [Driver Endpoints](#driver-endpoints)
 
 ## Authentication Services
 
@@ -114,7 +117,7 @@ All responses follow the `ResponseModel` format:
     "role": "END_USER",
     "email": "user@example.com"
   },
-  "error": null
+  "error": ""
 }
 ```
 
@@ -162,7 +165,7 @@ All responses follow the `ResponseModel` format:
     "role": "END_USER",
     "email": "user@example.com"
   },
-  "error": null
+  "error": ""
 }
 ```
 
@@ -203,7 +206,7 @@ All responses follow the `ResponseModel` format:
   "success": true,
   "message": "Account deleted",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -236,7 +239,7 @@ All responses follow the `ResponseModel` format:
   "success": true,
   "message": "Token is valid",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -319,7 +322,7 @@ All responses follow the `ResponseModel` format:
     "role": "ADMIN_USER",
     "email": "admin@example.com"
   },
-  "error": null
+  "error": ""
 }
 ```
 
@@ -360,7 +363,7 @@ All responses follow the `ResponseModel` format:
   "success": true,
   "message": "Account deleted",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -393,7 +396,7 @@ All responses follow the `ResponseModel` format:
   "success": true,
   "message": "Token is valid",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -485,7 +488,7 @@ All responses follow the `ResponseModel` format:
   "success": true,
   "message": "Admin user removed",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -531,7 +534,7 @@ Retrieves all registered admin users.
       }
     ]
   },
-  "error": null
+  "error": ""
 } 
 ```
 **Error Response:**
@@ -577,7 +580,7 @@ Retrieves all registered admin users.
       }
     ]
   },
-  "error": null
+  "error": ""
 }
 ```
 
@@ -627,7 +630,7 @@ Retrieves all registered admin users.
     "assigned_route": {},
     "vehicle": null
   },
-  "error": null
+  "error": ""
 }
 ```
 
@@ -641,7 +644,7 @@ Retrieves all registered admin users.
   "success": false,
   "message": "Invalid phone number format",
   "data": null,
-  "error": null
+  "error": ""
 }
 ```
 
@@ -668,7 +671,7 @@ Retrieves all registered admin users.
   "success": true,
   "message": "Driver user deleted",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -681,7 +684,7 @@ Retrieves all registered admin users.
   "success": false,
   "message": "Failed to delete driver user",
   "data": null,
-  "error": null
+  "error": ""
 }
 ```
 
@@ -709,7 +712,7 @@ Retrieves all registered admin users.
   "success": true,
   "message": "Driver phone number updated",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 
@@ -725,6 +728,116 @@ Retrieves all registered admin users.
   "error": "failed_to_update_driver_phone_number"
 }
 ```
+
+### Assign Vehicle to Driver
+`PATCH /api/admin/management/assign_vehicle_to_driver`
+Assigns a vehicle to a driver.
+
+**Request Body:**
+```json
+{
+  "driver_uid": "string",
+  "vehicle_uuid": "string"
+}
+```
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle assigned to driver successfully",
+  "data": {
+    "driver": {
+      "uid": "xSbi0CmrchPQY4qj2lKCblwZoMs2",
+      "first_name": "Cenker",
+      "last_name": "Özkan",
+      "phone_number": "+905343732399",
+      "role": "DRIVER_USER",
+      "vehicle": {
+        "uuid": "e3d95573-6ed7-4d96-9020-bf9312c6eec5",
+        "vehicle_brand": "Mercedes",
+        "vehicle_model": "Sprinter",
+        "vehicle_year": 2024,
+        "plate_number": "06 BTU 495",
+        "is_started": false,
+        "route_uuids": [
+          "46ef0968-14bd-4a86-8428-15416075e463"
+        ]
+      }
+    }
+  },
+  "error": ""
+}
+```
+**Error Response:**
+- 500: Failed to assign vehicle
+- 404: Driver not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Driver not found",
+  "data": null,
+  "error": ""
+}
+```
+
+### Remove Vehicle from Driver
+`PATCH /api/admin/management/remove_vehicle_from_driver/{driver_uid}`
+Removes a vehicle from a driver.
+
+**Parameters:**
+- `driver_uid`: UID of the driver
+
+**Headers:**
+- `Authorization`: Bearer token
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle removed from driver successfully",
+  "data": {
+    "driver": {
+      "uid": "xSbi0CmrchPQY4qj2lKCblwZoMs2",
+      "first_name": "Cenker",
+      "last_name": "Özkan",
+      "phone_number": "+905343732399",
+      "role": "DRIVER_USER",
+      "vehicle": null
+    }
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+- 500: Failed to remove vehicle
+- 404: Driver not found
+- 400: Driver has no vehicle assigned
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Driver not found",
+  "data": null,
+  "error": ""
+}
+```
+
+
 
 ## Admin Route Management Endpoints
 
@@ -754,19 +867,17 @@ Retrieves all registered admin users.
         "stops": [
           {
             "lat": 41.0082,
-            "lon": 28.9784,
-            "stop_name": "Taksim Square"
+            "lon": 28.9784
           },
           {
             "lat": 41.0055,
-            "lon": 28.9773,
-            "stop_name": "Galata Tower" 
+            "lon": 28.9773
           }
         ]
       }
     ]
   },
-  "error": null
+  "error": ""
 }
 ```
 
@@ -781,7 +892,7 @@ Retrieves all registered admin users.
   "data": {
     "routes": []
   },
-  "error": null
+  "error": ""
 }
 ```
 ### Create Route
@@ -794,8 +905,7 @@ Retrieves all registered admin users.
   "stops": [
     {
       "lat": 0,
-      "lon": 0,
-      "stop_name": "string"
+      "lon": 0
     }
   ]
 }
@@ -821,12 +931,11 @@ Retrieves all registered admin users.
     "stops": [
       {
         "lat": 41.0082,
-        "lon": 28.9784,
-        "stop_name": "Taksim Square"
+        "lon": 28.9784
       }
     ]
   },
-  "error": null
+  "error": ""
 }
 ```
 **Error Response:**
@@ -1024,7 +1133,7 @@ Creates a new vehicle.
     "plate_number": "06 ABC 123",
     "route_uuids": []
   },
-  "error": null
+  "error": ""
 }
 ```
 **Error Response:**
@@ -1113,7 +1222,7 @@ Updates an existing vehicle.
     "plate_number": "06 ABC 123",
     "route_uuids": ["route-uuid-1", "route-uuid-2"]
   },
-  "error": null
+  "error": ""
 }
 ```
 **Error Response:**
@@ -1145,7 +1254,7 @@ Deletes a vehicle by UUID.
   "success": true,
   "message": "Vehicle deleted successfully",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 **Error Response:**
@@ -1176,7 +1285,7 @@ Success Response:
   "success": true,
   "message": "Vehicle deleted successfully",
   "data": {},
-  "error": null
+  "error": ""
 }
 ```
 **Error Responses:**
@@ -1221,7 +1330,7 @@ Assigns routes to a vehicle.
       "route_uuids": ["route-uuid-1", "route-uuid-2"]
     }
   },
-  "error": null
+  "error": ""
 }
 ```
 **Error Response:**
@@ -1235,6 +1344,105 @@ Assigns routes to a vehicle.
   "success": false,
   "message": "Vehicle not found",
   "data": null,
+  "error": ""
+}
+```
+
+## Driver Endpoints
+### Get Vehicle
+`GET /api/driver/get_vehicle/{driver_uid}`
+Retrieves the vehicle assigned to the driver.
+
+**Parameters:**
+- `driver_uid`: UID of the driver
+- 
+***Headers:**
+- `Authorization`: Bearer token (Driver token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with vehicle data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle retrieved successfully",
+  "data": {
+    "vehicle": {
+      "uuid": "vehicle-uuid-123",
+      "vehicle_brand": "Mercedes",
+      "vehicle_model": "Sprinter",
+      "vehicle_year": "2023",
+      "plate_number": "06 ABC 123",
+      "route_uuids": ["route-uuid-1", "route-uuid-2"]
+    }
+  },
+  "error": ""
+}
+```
+**Error Response:**
+- 500: Failed to retrieve vehicle
+- 404: Vehicle not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "No vehicle assigned to this driver",
+  "data": {},
+  "error": ""
+}
+```
+
+### Get Vehicle Route
+`GET /api/driver/get_vehicle_route/{driver_uid}`
+Retrieves the route assigned to the vehicle of the driver.
+
+**Parameters:**
+- `driver_uid`: UID of the driver
+
+**Headers:**
+- `Authorization`: Bearer token (Driver token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with route data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Route retrieved successfully",
+  "data": {
+    "route": {
+      "uuid": "route-uuid-123",
+      "route_name": "Morning Express Route 1",
+      "created_at": "2024-03-29T10:00:00",
+      "updated_at": "2024-03-29T10:00:00",
+      "start_time": "08:00",
+      "stops": [
+        {
+          "lat": 41.0082,
+          "lon": 28.9784
+        }
+      ]
+    }
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+- 500: Failed to retrieve route
+- 404: Route not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Vehicle not found",
+  "data": {},
   "error": ""
 }
 ```

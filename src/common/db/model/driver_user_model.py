@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .vehicle import Vehicle
+from .vehicle_model import VehicleModel
 
 class DriverUserModel(BaseModel):
     uid: str            # Firebase UID
@@ -7,4 +7,4 @@ class DriverUserModel(BaseModel):
     last_name: str
     phone_number: str
     role: str = "DRIVER_USER"
-    vehicle: Vehicle | None = None
+    vehicle: VehicleModel | None = None

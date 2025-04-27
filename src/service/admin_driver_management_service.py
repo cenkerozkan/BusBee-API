@@ -4,18 +4,21 @@ import asyncio
 from ..common.meta.singleton_meta import SingletonMeta
 from ..common.firebase.firebase_handler import firebase_handler
 from ..common.db.model.driver_user_model import DriverUserModel
+from ..common.db.model.vehicle_model import VehicleModel
 from ..repository.driver_user_repository import driver_user_repository
+from ..repository.vehicle_repository import vehicle_repository
 from ..common.request_model.admin_driver_management_models import AddDriverUserModel
 from ..common.util.logger import get_logger
 from ..common.util.error_messages import get_error_message
 
 
 class AdminDriverManagementService:
-    __slots__ = ("_logger", "_firebase_handler", "_driver_user_repository")
+    __slots__ = ("_logger", "_firebase_handler", "_driver_user_repository", "_vehicle_repository")
     def __init__(self):
         self._logger = get_logger(__name__)
         self._firebase_handler = firebase_handler
         self._driver_user_repository = driver_user_repository
+        self._vehicle_repository = vehicle_repository
 
     def add_driver(
             self,
@@ -198,6 +201,108 @@ class AdminDriverManagementService:
                     "data": {"drivers": [driver.model_dump() for driver in drivers]}
                 }
             )
+        return result
+
+    async def assign_vehicle_to_driver(self, driver_uid: str, vehicle_uuid: str) -> dict:
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+
+        # Fetch the driver
+        driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
+        if not driver:
+            result.update({
+                "code": 404,
+                "success": False,
+                "message": "Driver not found"
+            })
+            return result
+
+        # Fetch the vehicle
+        vehicles = await self._vehicle_repository.get_all()
+        vehicle = next((v for v in vehicles if v.uuid == vehicle_uuid), None)
+        if not vehicle:
+            result.update({
+                "code": 404,
+                "success": False,
+                "message": "Vehicle not found"
+            })
+            return result
+
+        # Assign the vehicle to the driver
+        driver.vehicle = vehicle
+        update_result = await self._driver_user_repository.update_one(driver)
+        if not update_result:
+            result.update({
+                "code": 500,
+                "success": False,
+                "message": "Failed to assign vehicle to driver"
+            })
+            return result
+
+        result.update({
+            "code": 200,
+            "success": True,
+            "message": "Vehicle assigned to driver successfully",
+            "data": {"driver": driver.model_dump()}
+        })
+        return result
+
+    async def remove_vehicle_from_driver(
+            self,
+            driver_uid: str
+    ) -> dict:
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+
+        self._logger.info(f"Removing vehicle from driver: {driver_uid}")
+
+        # Get driver
+        driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
+        if not driver:
+            result.update({
+                "code": 404,
+                "success": False,
+                "message": "Driver not found"
+            })
+            return result
+
+        # Check if driver has a vehicle
+        if not driver.vehicle:
+            result.update({
+                "code": 400,
+                "success": False,
+                "message": "Driver has no vehicle assigned"
+            })
+            return result
+
+        # Remove vehicle from driver
+        driver.vehicle = None
+        update_result = await self._driver_user_repository.update_one(driver)
+        if not update_result:
+            result.update({
+                "code": 500,
+                "success": False,
+                "message": "Failed to remove vehicle from driver",
+                "error": "Database error"
+            })
+            return result
+
+        result.update({
+            "code": 200,
+            "success": True,
+            "message": "Vehicle removed from driver successfully",
+            "data": {"driver": driver.model_dump()}
+        })
         return result
 
 
