@@ -23,12 +23,11 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
 - [End User Authentication Endpoints](#end-user-authentication-endpoints)
   - [Register End User](#register-end-user)
   - [Login End User](#login-end-user)
-  - [Logout End User](#logout-end-user)
   - [Delete End User Account](#delete-end-user-account)
   - [Validate End User Token](#validate-end-user-token)
+  - [Create User Endpoint](#create-user-endpoint)
 - [Admin User Authentication Endpoints](#admin-user-authentication-endpoints)
   - [Login Admin User](#login-admin-user)
-  - [Logout Admin User](#logout-admin-user)
   - [Delete Admin User Account](#delete-admin-user-account)
   - [Validate Admin Token](#validate-admin-token)
   - [Add Admin User](#add-admin-user)
@@ -38,7 +37,6 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Get All Drivers](#get-all-drivers)
   - [Add Driver](#add-driver)
   - [Delete Driver](#delete-driver)
-  - [Update Driver Password](#update-driver-password)
   - [Update Driver Phone Number](#update-driver-phone-number)
 - [Admin Route Management Endpoints](#admin-route-management-endpoints)
   - [Get All Routes](#get-all-routes)
@@ -182,46 +180,6 @@ All responses follow the `ResponseModel` format:
 }
 ```
 
-### Logout End User
-`POST /api/auth/end_user/logout`
-
-**Request Body:**
-```json
-{
-  "user_uid": "string"
-}
-```
-
-**Headers:**
-- `Authorization`: Bearer token
-
-**Success Response:**
-- Status: 200
-- Body: ResponseModel with success message
-
-**Success Response Example:**
-```json
-{
-  "success": true,
-  "message": "Logout successful",
-  "data": {},
-  "error": null
-}
-```
-
-**Error Response:**
-- 500: Logout failed
-
-**Error Response Example:**
-```json
-{
-  "success": false,
-  "message": "Logout failed",
-  "data": null,
-  "error": "INVALID_UID"
-}
-```
-
 ### Delete End User Account
 `DELETE /api/auth/end_user/delete_account`
 
@@ -295,6 +253,40 @@ All responses follow the `ResponseModel` format:
 }
 ```
 
+### Create User Endpoint
+`POST /api/auth/end_user/create_user`
+**Request Body:**
+```json
+{
+  "email": "string",
+  "password": "string",
+  "first_name": "string",
+  "last_name": "string"
+}
+```
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with new user data
+
+
+**Headers:**
+- `Authorization`: Bearer token
+
+
+**Error Response:**
+- 500: Failed to create user
+- 400: Invalid email format
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Invalid email format",
+  "data": {},
+  "error": ""
+}
+```
+
+
 ## Admin User Authentication Endpoints
 
 ### Login Admin User
@@ -342,46 +334,6 @@ All responses follow the `ResponseModel` format:
   "message": "Invalid credentials",
   "data": null,
   "error": "INVALID_LOGIN"
-}
-```
-
-### Logout Admin User
-`POST /api/auth/admin_user/logout`
-
-**Request Body:**
-```json
-{
-  "user_uid": "string"
-}
-```
-
-**Headers:**
-- `Authorization`: Bearer token
-
-**Success Response:**
-- Status: 200
-- Body: ResponseModel with success message
-
-**Success Response Example:**
-```json
-{
-  "success": true,
-  "message": "Logout successful",
-  "data": {},
-  "error": null
-}
-```
-
-**Error Response:**
-- 500: Logout failed
-
-**Error Response Example:**
-```json
-{
-  "success": false,
-  "message": "Logout failed",
-  "data": null,
-  "error": "SESSION_NOT_FOUND"
 }
 ```
 

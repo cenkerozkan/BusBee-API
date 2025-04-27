@@ -51,25 +51,6 @@ def login(
         ).model_dump()
     )
 
-
-@admin_user_auth_router.post("/logout", tags=["Admin User Auth"])
-def logout(
-        logout_data: LogoutRequest,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-) -> JSONResponse:
-    logger.info(f"Logout request for {logout_data.user_uid}")
-    jwt = jwt.credentials
-    logout_result: bool = admin_user_auth_service.logout(logout_data.user_uid)
-    return JSONResponse(
-        status_code=200 if logout_result else 500,
-        content=ResponseModel(
-            success=logout_result,
-            message="Logout successful" if logout_result else "Logout failed",
-            data={},
-            error=""
-        ).model_dump()
-    )
-
 @admin_user_auth_router.delete("/delete_account", tags=["Admin User Auth"])
 def delete_account(
         delete_data: DeleteAccountRequest,

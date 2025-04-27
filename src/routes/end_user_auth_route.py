@@ -83,25 +83,6 @@ def register(
         ).model_dump()
     )
 
-@end_user_auth_router.post("/logout", tags=["End User Auth"])
-def logout(
-        logout_data: LogoutRequest,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-) -> JSONResponse:
-    logger.info(f"Logout request for {logout_data.user_uid}")
-    jwt = jwt.credentials
-    end_user_auth_service = EndUserAuthService()
-    logout_result: bool = end_user_auth_service.logout(logout_data.user_uid)
-    return JSONResponse(
-        status_code=200 if logout_result else 500,
-        content=ResponseModel(
-            success=logout_result,
-            message="Logout successful" if logout_result else "Logout failed",
-            data={},
-            error=""
-        ).model_dump()
-    )
-
 @end_user_auth_router.delete("/delete_account", tags=["End User Auth"])
 def delete_account(
         delete_data: DeleteAccountRequest,
@@ -133,5 +114,36 @@ def validate_token(
             message="Token is valid" if end_user_auth_service.validate_token(jwt) else "Token is invalid",
             data={},
             error=""
+        ).model_dump()
+    )
+
+@end_user_auth_router.post("/create_user", tags=["End User Auth"])
+async def create_account(
+        user_data: CreateAccountRequest,
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    jwt = jwt.credentials
+    logger.info(f"Create account request for {user_data.email}")
+    email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
+    if not re.match(email_pattern, user_data.email):
+        return JSONResponse(
+            status_code=400,
+            content=ResponseModel(
+                success=False,
+                message="Invalid email format",
+                data={},
+                error=""
+            ).model_dump()
+        )
+
+    create_result: dict = await end_user_auth_service.create_account(user_data.uid, user_data.email,
+                                                                     user_data.first_name, user_data.last_name)
+    return JSONResponse(
+        status_code=create_result.get("code"),
+        content=ResponseModel(
+            success=create_result.get("success"),
+            message=create_result.get("message"),
+            data=create_result.get("data"),
+            error=create_result.get("error")
         ).model_dump()
     )

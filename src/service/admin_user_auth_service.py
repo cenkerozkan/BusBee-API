@@ -74,19 +74,6 @@ class AdminUserAuthService:
             )
         return result
 
-    def logout(
-            self,
-            user_uid: str
-    ) -> bool:
-        try:
-            logout_result: bool = self._firebase_handler.logout(user_uid)
-
-        except Exception as e:
-            print("Error: ", e)
-            return False
-
-        return True
-
     def delete_account(
             self,
             user_uid: str

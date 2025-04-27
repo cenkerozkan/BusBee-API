@@ -127,19 +127,6 @@ class EndUserAuthService:
             )
         return result
 
-    def logout(
-            self,
-            user_uid: str
-    ) -> bool:
-        try:
-            logout_result: bool = self._firebase_handler.logout(user_uid)
-
-        except Exception as e:
-            print("Error: ", e)
-            return False
-
-        return True
-
     def delete_account(
             self,
             user_uid: str
@@ -162,5 +149,47 @@ class EndUserAuthService:
         result: bool = self._firebase_handler.validate_token(token)
         return result
 
+    async def create_account(
+            self,
+            uid: str,
+            email: str,
+            first_name: str,
+            last_name: str
+    ) -> dict:
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "data": {},
+            "error": ""
+        }
+        crud_result: bool = False
+        new_user_model: EndUserModel = EndUserModel(
+            uid=uid,
+            created_at=str(dt.datetime.now().isoformat()),
+            last_active=str(dt.datetime.now().isoformat()),
+            email=email,
+            first_name=first_name,
+            last_name=last_name
+        )
+        crud_result = await self._end_user_repository.insert_one(new_user_model.model_dump())
+        if not crud_result:
+            result.update(
+                {
+                    "code": 500,
+                    "success": False,
+                    "message": "Failed to create account",
+                    "error": "Failed to create account"
+                }
+            )
+        result.update(
+            {
+                "code": 200,
+                "success": True,
+                "message": "Account created successfully",
+                "data": new_user_model.model_dump()
+            }
+        )
+        return result
 
 end_user_auth_service = EndUserAuthService()

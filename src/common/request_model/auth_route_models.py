@@ -25,3 +25,9 @@ class AddAdminUserModel(BaseModel):
 
 class RemoveAdminUserModel(BaseModel):
     user_uid: str
+
+class CreateAccountRequest(BaseModel):
+    uid: str
+    email: str
+    first_name: str
+    last_name: str
