@@ -5,6 +5,7 @@ import uuid
 from starlette.routing import Route
 
 from ..repository.route_repository import route_repository
+from ..repository.vehicle_repository import vehicle_repository
 from ..common.util.logger import get_logger
 from ..common.util.error_messages import get_error_message
 from ..common.request_model.admin_route_management_models import *
@@ -12,10 +13,11 @@ from ..common.db.model.route_model import RouteModel
 from ..common.request_model.admin_route_management_models import *
 
 class AdminRouteManagementService:
-    __slots__ = ("_logger", "_route_repository")
+    __slots__ = ("_logger", "_route_repository", "_vehicle_repository")
     def __init__(self):
         self._logger = get_logger(__name__)
         self._route_repository = route_repository
+        self._vehicle_repository = vehicle_repository
 
     async def create_route(
             self,
@@ -35,8 +37,6 @@ class AdminRouteManagementService:
             start_time=new_route.start_time,
             created_at=str(dt.datetime.now().isoformat()),
             updated_at=str(dt.datetime.now().isoformat()),
-            driver_name=None,
-            driver_number=None,
             stops=new_route.stops,
         )
         crud_result: dict = await self._route_repository.insert_one(new_route.model_dump())
@@ -60,7 +60,6 @@ class AdminRouteManagementService:
             self,
             route_id: str,
     ) -> dict:
-        self._logger.info(f"Deleting route: {route_id}")
         result: dict = {
             "code": 0,
             "success": False,
@@ -68,6 +67,15 @@ class AdminRouteManagementService:
             "error": "",
             "data": {}
         }
+        # First, find vehicles using this route
+        vehicles = await self._vehicle_repository.get_by_route_uuid(route_id)
+
+        # Remove route from vehicles
+        for vehicle in vehicles:
+            vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route_id]
+            await self._vehicle_repository.update_one(vehicle)
+
+        # Then delete the route
         crud_result: dict = await self._route_repository.delete_one_by_uuid(route_id)
         if crud_result.get("success"):
             result.update({
@@ -88,7 +96,6 @@ class AdminRouteManagementService:
             self,
             route_name: str,
     ) -> dict:
-        self._logger.info(f"Deleting route: {route_name}")
         result: dict = {
             "code": 0,
             "success": False,
@@ -96,6 +103,25 @@ class AdminRouteManagementService:
             "error": "",
             "data": {}
         }
+        # First get the route to find its UUID
+        route = await self._route_repository.get_one_by_name(route_name)
+        if not route:
+            result.update({
+                "code": 404,
+                "success": False,
+                "message": "Route does not exist"
+            })
+            return result
+
+        # Find vehicles using this route
+        vehicles = await self._vehicle_repository.get_by_route_uuid(route.uuid)
+
+        # Remove route from vehicles
+        for vehicle in vehicles:
+            vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route.uuid]
+            await self._vehicle_repository.update_one(vehicle)
+
+        # Then delete the route
         crud_result = await self._route_repository.delete_one_by_name(route_name)
         if crud_result.get("success"):
             result.update({

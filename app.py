@@ -10,11 +10,14 @@ from src.common.response_model.response_model import ResponseModel
 from src.repository.end_user_repository import end_user_repository
 from src.repository.admin_user_repository import admin_user_repository
 from src.repository.driver_user_repository import driver_user_repository
+from src.repository.route_repository import route_repository
+from src.repository.vehicle_repository import vehicle_repository
 
 from src.routes.end_user_auth_route import end_user_auth_router
 from src.routes.admin_user_auth_route import admin_user_auth_router
 from src.routes.admin_driver_management_route import admin_driver_management_router
 from src.routes.admin_route_management_route import admin_route_management_router
+from src.routes.admin_vehicle_management_route import admin_vehicle_management_router
 
 load_dotenv()
 
@@ -24,7 +27,9 @@ async def lifespan(app: FastAPI):
         await asyncio.gather(
             admin_user_repository.ensure_db_setup(),
             end_user_repository.ensure_db_setup(),
-            driver_user_repository.ensure_db_setup()
+            driver_user_repository.ensure_db_setup(),
+            route_repository.ensure_db_setup(),
+            vehicle_repository.ensure_db_setup()
         )
     except Exception as e:
         raise e
@@ -74,3 +79,4 @@ app.include_router(end_user_auth_router)
 app.include_router(admin_user_auth_router)
 app.include_router(admin_driver_management_router)
 app.include_router(admin_route_management_router)
+app.include_router(admin_vehicle_management_router)

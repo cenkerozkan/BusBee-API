@@ -7,5 +7,4 @@ class DriverUserModel(BaseModel):
     last_name: str
     phone_number: str
     role: str = "DRIVER_USER"
-    assigned_route: dict = {}
     vehicle: Vehicle | None = None

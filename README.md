@@ -40,6 +40,19 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Delete Driver](#delete-driver)
   - [Update Driver Password](#update-driver-password)
   - [Update Driver Phone Number](#update-driver-phone-number)
+- [Admin Route Management Endpoints](#admin-route-management-endpoints)
+  - [Get All Routes](#get-all-routes)
+  - [Create Route](#create-route)
+  - [Update Route](#update-route)
+  - [Delete Route With Route ID](#delete-route-with-route-id)
+  - [Delete Route With Route Name](#delete-route-with-route-name)
+- [Admin Vehicle Management Endpoints](#admin-vehicle-management-endpoints)
+  - [Create Vehicle](#create-vehicle)
+  - [Get All Vehicles](#get-all-vehicles)
+  - [Update Vehicle](#update-vehicle)
+  - [Delete Vehicle](#delete-vehicle)
+  - [Delete Vehicle by Plate Number](#delete-vehicle-by-plate-number)
+  - [Assign Routes to Vehicle](#assign-routes-to-vehicle)
 
 ## Authentication Services
 
@@ -1065,6 +1078,253 @@ Retrieves all registered admin users.
   "success": false,
   "message": "Route not found",
   "data": {},
+  "error": ""
+}
+```
+## Admin Vehicle Management Endpoints
+
+This section details endpoints for managing vehicles by administrators.
+
+### Create Vehicle
+`POST /api/admin/management/vehicle/create`
+Creates a new vehicle.
+**Request Body:**
+```json
+{
+  "vehicle_brand": "string",
+  "vehicle_model": "string",
+  "vehicle_year": "string",
+  "plate_number": "string",
+  "route_uuids": ["string"]
+}
+```
+**Headers:**
+- Status: 200
+- Body: ResponseModel with new vehicle data
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle created successfully",
+  "data": {
+    "uuid": "vehicle-uuid-123",
+    "vehicle_brand": "Mercedes",
+    "vehicle_model": "Sprinter",
+    "vehicle_year": "2023",
+    "plate_number": "06 ABC 123",
+    "route_uuids": []
+  },
+  "error": null
+}
+```
+**Error Response:**
+- 500: Failed to create vehicle
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Failed to create vehicle",
+  "data": null,
+  "error": ""
+}
+```
+
+### Get All Vehicles
+`GET /api/admin/management/vehicle/get_all`
+Retrieves all vehicles.
+**Headers:**
+- `Authorization`: Bearer token
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with list of vehicles
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicles retrieved successfully",
+  "data": {
+    "vehicles": [
+      {
+        "uuid": "vehicle-uuid-123",
+        "vehicle_brand": "Mercedes",
+        "vehicle_model": "Sprinter",
+        "vehicle_year": "2023",
+        "plate_number": "06 ABC 123",
+        "route_uuids": ["route-uuid-1", "route-uuid-2"]
+      }
+    ]
+  },
+  "error": ""
+}
+```
+**Error Response:**
+- 404: No vehicles found
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "No vehicles found",
+  "data": {
+    "vehicles": []
+  },
+  "error": ""
+}
+```
+
+### Update Vehicle
+`PATCH /api/admin/management/vehicle/update`
+Updates an existing vehicle.
+**Request Body:**
+```json
+{
+  "uuid": "string",
+  "vehicle_brand": "string",
+  "vehicle_model": "string",
+  "vehicle_year": "string",
+  "plate_number": "string",
+  "route_uuids": ["string"]
+}
+```
+**Headers:**
+- `Authorization`: Bearer token (Admin token required)
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with updated vehicle data
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle updated successfully",
+  "data": {
+    "uuid": "vehicle-uuid-123",
+    "vehicle_brand": "Mercedes",
+    "vehicle_model": "Sprinter",
+    "vehicle_year": "2023",
+    "plate_number": "06 ABC 123",
+    "route_uuids": ["route-uuid-1", "route-uuid-2"]
+  },
+  "error": null
+}
+```
+**Error Response:**
+- 500: Failed to update vehicle
+- 404: Vehicle not found
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Vehicle not found",
+  "data": null,
+  "error": ""
+}
+```
+
+### Delete Vehicle By UUID
+`DELETE /api/admin/management/vehicle/delete/{vehicle_uuid}`
+Deletes a vehicle by UUID.
+**Parameters:**
+- `vehicle_uuid`: UUID of the vehicle to be deleted
+**Headers:**
+- `Authorization`: Bearer token (Admin token required)
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle deleted successfully",
+  "data": {},
+  "error": null
+}
+```
+**Error Response:**
+- 500: Failed to delete vehicle
+- 404: Vehicle not found
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Vehicle not found",
+  "data": null,
+  "error": ""
+}
+```
+### Delete Vehicle By Plate Number
+`DELETE /api/admin/management/vehicle/delete_plate_number/{plate_number}`
+Deletes a vehicle by plate number.
+**Parameters:**
+- `plate_number`: Plate number of the vehicle to be deleted
+**Headers:**
+- `Authorization`: Bearer token (Admin token required)
+Success Response:
+- Status: 200
+- Body: ResponseModel with success message
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Vehicle deleted successfully",
+  "data": {},
+  "error": null
+}
+```
+**Error Responses:**
+- 500: Failed to delete vehicle
+- 404: Vehicle not found
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Vehicle not found",
+  "data": null,
+  "error": ""
+}
+```
+### Assign Routes to Vehicle
+`PATCH /api/admin/management/vehicle/assign_routes`
+Assigns routes to a vehicle.
+**Request Body:**
+```json
+{
+  "vehicle_uuid": "string",
+  "route_uuids": ["string"]
+}
+```
+**Headers:**
+- `Authorization`: Bearer token (Admin token required)
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Routes assigned successfully",
+  "data": {
+    "vehicle": {
+      "uuid": "vehicle-uuid-123",
+      "vehicle_brand": "Mercedes",
+      "vehicle_model": "Sprinter",
+      "vehicle_year": "2023",
+      "plate_number": "06 ABC 123",
+      "route_uuids": ["route-uuid-1", "route-uuid-2"]
+    }
+  },
+  "error": null
+}
+```
+**Error Response:**
+- 500: Failed to assign routes
+- 404: Vehicle not found
+- 400: Invalid route UUID
+- 409: Route already assigned
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Vehicle not found",
+  "data": null,
   "error": ""
 }
 ```

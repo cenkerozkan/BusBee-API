@@ -13,10 +13,6 @@ from ..common.util.error_messages import get_error_message
 
 from pprint import pprint
 
-# TODO: After finishing firebase auth,
-#       look up for email verification
-#       and password reset
-
 class AdminUserAuthService:
     __slots__ = ("_logger", "_firebase_handler", "_admin_user_repository")
     def __init__(self):
