@@ -154,7 +154,6 @@ class FirebaseHandler:
     def create_driver_user(
             self,
             phone_number: str,
-            password: str
     ) -> dict:
         result: dict = {
             "uid": "",
@@ -162,7 +161,6 @@ class FirebaseHandler:
         }
         new_driver_user = auth.create_user(
             phone_number=phone_number,
-            password=password,
             app=self._app
         )
 

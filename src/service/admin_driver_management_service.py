@@ -33,7 +33,7 @@ class AdminDriverManagementService:
         }
 
         try:
-            firebase_result = self._firebase_handler.create_driver_user(driver_data.phone_number, driver_data.password)
+            firebase_result = self._firebase_handler.create_driver_user(driver_data.phone_number)
 
         except Exception as e:
             self._logger.error(f"Failed to create driver user: {e}")
@@ -55,6 +55,15 @@ class AdminDriverManagementService:
                 phone_number=driver_data.phone_number,
             )
             is_saved = asyncio.run(self._driver_user_repository.insert_one(new_driver_user.model_dump()))
+            if not is_saved:
+                result.update(
+                    {
+                        "code": 500,
+                        "success": False,
+                        "message": "Failed to add driver user",
+                        "error": ""
+                    }
+                )
             result.update(
                 {
                     "code": 200,
@@ -84,46 +93,6 @@ class AdminDriverManagementService:
             is_deleted = asyncio.run(self._driver_user_repository.delete_one_by_uid(driver_uid))
 
         return is_deleted
-
-    def update_driver_password(
-            self,
-            driver_uid: str,
-            new_password: str
-    ) -> dict:
-        self._logger.info(f"Updating driver {driver_uid}")
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
-        firebase_response: bool = False
-
-        try:
-            firebase_response = self._firebase_handler.update_driver_password(driver_uid, new_password)
-
-        except Exception as e:
-            self._logger.error(f"Failed to update driver password: {e}")
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Failed to update driver password",
-                    "error": str(e)
-                }
-            )
-            return result
-
-        if firebase_response is True:
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Driver password updated"
-                }
-            )
-        return result
 
     def update_driver_phone_number(
             self,
@@ -209,8 +178,18 @@ class AdminDriverManagementService:
                 }
             )
             return result
-
-        if drivers:
+        print(drivers)
+        print(len(drivers))
+        if len(drivers) == 0:
+            result.update(
+                {
+                    "code": 404,
+                    "success": True,
+                    "message": "No drivers found",
+                    "data": {}
+                }
+            )
+        else:
             result.update(
                 {
                     "code": 200,

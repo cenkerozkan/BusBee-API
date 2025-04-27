@@ -27,7 +27,7 @@ async def get_all_drivers(
         status_code=result.get("code"),
         content=ResponseModel(
             success=result.get("success"),
-            message="Drivers retrieved",
+            message=result.get("message"),
             data=result.get("data"),
             error=""
         ).model_dump()
@@ -76,23 +76,6 @@ def delete_driver(
             error=""
         ).model_dump()
 )
-
-@admin_driver_management_router.patch("/update_driver_password", tags=["Admin Driver Management"])
-def update_driver_password(
-        driver_data: UpdateDriverPasswordModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-) -> JSONResponse:
-    logger.info(f"Update driver password request for driver uid: {driver_data.uid}")
-    result: dict = admin_management_service.update_driver_password(driver_data.uid, driver_data.new_password)
-    return JSONResponse(
-        status_code=result.get("code"),
-        content=ResponseModel(
-            success=result.get("success"),
-            message=result.get("message"),
-            data=result.get("data"),
-            error=result.get("error")
-        ).model_dump()
-    )
 
 @admin_driver_management_router.patch("/update_driver_phone_number", tags=["Admin Driver Management"])
 def update_driver_phone_number(
