@@ -651,7 +651,6 @@ Retrieves all registered admin users.
   "first_name": "string",
   "last_name": "string",
   "phone_number": "string",
-  "password": "string"
 }
 ```
 
@@ -731,47 +730,6 @@ Retrieves all registered admin users.
   "message": "Failed to delete driver user",
   "data": null,
   "error": null
-}
-```
-
-### Update Driver Password
-`PATCH /api/admin/management/update_driver_password`
-
-**Request Body:**
-```json
-{
-  "uid": "string",
-  "new_password": "string"
-}
-```
-
-**Headers:**
-- `Authorization`: Bearer token
-
-**Success Response:**
-- Status: 200
-- Body: ResponseModel with success message
-
-**Success Response Example:**
-```json
-{
-  "success": true,
-  "message": "Driver password updated",
-  "data": {},
-  "error": null
-}
-```
-
-**Error Response:**
-- 500: Failed to update driver password
-
-**Error Response Example:**
-```json
-{
-  "success": false,
-  "message": "Failed to update driver password",
-  "data": null,
-  "error": "PASSWORD_POLICY_VIOLATION"
 }
 ```
 
