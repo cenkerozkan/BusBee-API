@@ -54,6 +54,8 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Delete Vehicle by Plate Number](#delete-vehicle-by-plate-number)
   - [Assign Routes to Vehicle](#assign-routes-to-vehicle)
 - [Driver Endpoints](#driver-endpoints)
+  - [Get Vehicle](#get-vehicle)
+  - [Get Vehicle Route](#get-vehicle-route)
 
 ## Authentication Services
 
