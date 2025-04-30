@@ -1262,6 +1262,7 @@ Deletes a vehicle by UUID.
 **Error Response:**
 - 500: Failed to delete vehicle
 - 404: Vehicle not found
+- 409: Vehicle is assigned to a driver
 **Error Response Example:**
 ```json
 {
@@ -1293,6 +1294,7 @@ Success Response:
 **Error Responses:**
 - 500: Failed to delete vehicle
 - 404: Vehicle not found
+- 409: Vehicle is assigned to a driver
 **Error Response Example:**
 ```json
 {
