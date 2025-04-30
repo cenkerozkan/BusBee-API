@@ -4,6 +4,7 @@ import uuid
 from ..common.util.logger import get_logger
 from ..repository.vehicle_repository import vehicle_repository
 from ..repository.route_repository import route_repository
+from ..repository.driver_user_repository import driver_user_repository
 from ..common.db.model.vehicle_model import VehicleModel
 
 class AdminVehicleManagementService:
@@ -11,6 +12,7 @@ class AdminVehicleManagementService:
         self._logger = get_logger(__name__)
         self._vehicle_repository = vehicle_repository
         self._route_repository = route_repository
+        self._driver_user_repository = driver_user_repository
 
     async def create_vehicle(self, new_vehicle):
         result = {
@@ -118,6 +120,14 @@ class AdminVehicleManagementService:
             "error": "",
             "data": {}
         }
+        driver_crud_result: dict = await self._driver_user_repository.get_by_vehicle(vehicle_uuid=vehicle_uuid)
+        if driver_crud_result.get("success"):
+            result.update({
+                "code": 409, "success": False,
+                "message": f"Vehicle is assigned to the driver {driver_crud_result.get("data").get("first_name")} {driver_crud_result.get("data").get("last_name")}",
+                "error": driver_crud_result["error"]
+            })
+            return result
         crud_result: dict = await self._vehicle_repository.delete_one(vehicle_uuid)
         if crud_result.get("success"):
             result.update({
@@ -142,19 +152,27 @@ class AdminVehicleManagementService:
             "error": "",
             "data": {}
         }
-        crud_result: dict = await self._vehicle_repository.delete_one_by_plate(plate_number)
-        if crud_result.get("success"):
+        driver_crud_result: dict = await self._driver_user_repository.get_by_vehicle(plate_number=plate_number)
+        if driver_crud_result.get("success"):
+            result.update({
+                "code": 409, "success": False,
+                "message": f"Vehicle is assigned to the driver {driver_crud_result.get("data").get("first_name")} {driver_crud_result.get("data").get("last_name")}",
+                "error": driver_crud_result["error"]
+            })
+            return result
+        vehicle_crud_result: dict = await self._vehicle_repository.delete_one_by_plate(plate_number)
+        if vehicle_crud_result.get("success"):
             result.update({
                 "code": 200,
                 "success": True,
-                "message": crud_result["message"]
+                "message": vehicle_crud_result["message"]
             })
         else:
             result.update({
-                "code": 404 if crud_result["message"] == "Vehicle not found" else 500,
+                "code": 404 if vehicle_crud_result["message"] == "Vehicle not found" else 500,
                 "success": False,
-                "message": crud_result["message"],
-                "error": crud_result["error"]
+                "message": vehicle_crud_result["message"],
+                "error": vehicle_crud_result["error"]
             })
         return result
 

@@ -125,4 +125,39 @@ class DriverUserRepository(RepositoryBaseClass):
     ) -> bool:
         raise NotImplementedError()
 
+    async def get_by_vehicle(
+            self,
+            plate_number: str | None = None,
+            vehicle_uuid: str | None = None
+    ) -> dict:
+        self._logger.info(f"Getting user by plate: {plate_number} or vehicle_uuid: {vehicle_uuid}")
+        result: dict = {
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+        query = {}
+
+        # NOTE: This is a new one for me, it seems like mongodb allows
+        #       you to use dot notation to access nested fields in a document.
+        if plate_number:
+            query["vehicle.plate_number"] = plate_number
+        elif vehicle_uuid:
+            query["vehicle.uuid"] = vehicle_uuid
+        else:
+            self._logger.warn("Neither plate number nor vehicle UUID provided")
+            return {"success": False, "message": "Herhangi bir araç bilgisi sağlanmadı", "error": ""}
+
+        try:
+            user = await self._collection.find_one(query)
+            if user:
+                result.update({"success": True, "message": "User found", "data": user})
+        except Exception as e:
+            self._logger.error(f"Failed to get document: {e}")
+            result.update({"success": False, "message": "Failed to extract document.", "error": str(e)})
+
+        return result
+
+
 driver_user_repository = DriverUserRepository()
