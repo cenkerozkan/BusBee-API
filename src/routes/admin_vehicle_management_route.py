@@ -115,3 +115,23 @@ async def assign_routes(
             error=result.get("error", "")
         ).model_dump()
     )
+
+@admin_vehicle_management_router.patch("/delete_routes", tags=["Admin Vehicle Management"])
+async def delete_routes(
+        assignment: AssignRoutesModel,
+        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+) -> JSONResponse:
+    logger.info(f"Delete routes request for vehicle: {assignment.vehicle_uuid}")
+    result = await admin_vehicle_management_service.delete_routes(
+        assignment.vehicle_uuid,
+        assignment.route_uuids
+    )
+    return JSONResponse(
+        status_code=result.get("code", 500),
+        content=ResponseModel(
+            success=result.get("success", False),
+            message=result.get("message", ""),
+            data=result.get("data", {}),
+            error=result.get("error", "")
+        ).model_dump()
+    )

@@ -181,8 +181,7 @@ class AdminDriverManagementService:
                 }
             )
             return result
-        print(drivers)
-        print(len(drivers))
+
         if len(drivers) == 0:
             result.update(
                 {

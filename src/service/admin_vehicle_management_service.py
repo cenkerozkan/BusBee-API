@@ -1,4 +1,3 @@
-# src/service/admin_vehicle_management_service.py
 import uuid
 
 from ..common.util.logger import get_logger
@@ -6,6 +5,7 @@ from ..repository.vehicle_repository import vehicle_repository
 from ..repository.route_repository import route_repository
 from ..repository.driver_user_repository import driver_user_repository
 from ..common.db.model.vehicle_model import VehicleModel
+from ..common.db.model.driver_user_model import DriverUserModel
 
 class AdminVehicleManagementService:
     def __init__(self):
@@ -65,8 +65,8 @@ class AdminVehicleManagementService:
             })
             return result
 
-        routes = await self._route_repository.get_all()
-        route_map = {route.uuid: route for route in routes}
+        routes: list = await self._route_repository.get_all()
+        route_map: dict = {route.uuid: route for route in routes}
 
         enriched_vehicles = []
         for vehicle in vehicles:
@@ -196,7 +196,9 @@ class AdminVehicleManagementService:
             return result
 
         # Check for duplicate routes
-        # This is a nice way of handling duplicates.
+        # NOTE: In python, if you use & operator with sets, it returns a new set
+        #       containing elements that are common to both sets. This is a neat
+        #       way to check for duplicates.
         duplicate_routes = set(vehicle.route_uuids) & set(route_uuids)
         if duplicate_routes:
             result.update({
@@ -220,11 +222,18 @@ class AdminVehicleManagementService:
             })
             return result
 
-        # Update vehicle routes
-        vehicle.route_uuids = route_uuids
+        # Add routes to vehicle
+        vehicle.route_uuids.extend(route_uuids)
         crud_result = await self._vehicle_repository.update_one(vehicle)
 
         if crud_result["success"]:
+            # Update driver if vehicle is assigned to one using get_by_vehicle
+            driver_result = await self._driver_user_repository.get_by_vehicle(vehicle_uuid=vehicle_uuid)
+            if driver_result["success"]:
+                driver = DriverUserModel(**driver_result["data"])
+                driver.vehicle = vehicle  # Update with new route data
+                await self._driver_user_repository.update_one(driver)
+
             result.update({
                 "code": 200,
                 "success": True,
@@ -238,6 +247,47 @@ class AdminVehicleManagementService:
                 "message": crud_result["message"],
                 "error": crud_result["error"]
             })
+        return result
+
+    async def delete_routes(self, vehicle_uuid: str, route_uuids: list[str]):
+        result = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+        # Get vehicle
+        vehicles: list = await self._vehicle_repository.get_all()
+        vehicle = next((v for v in vehicles if v.uuid == vehicle_uuid), None)
+        if not vehicle:
+            result.update({"code": 404, "success": False, "message": "Vehicle not found"})
+            return result
+
+        # Check if routes exist in vehicle's routes
+        non_existing_routes = set(route_uuids) - set(vehicle.route_uuids)
+        if non_existing_routes:
+            result.update({
+                "code": 400, "success": False, "message": "Routes not assigned to vehicle", "error": f"Routes not found in vehicle: {list(non_existing_routes)}"})
+            return result
+
+        # Remove routes from vehicle
+        vehicle.route_uuids = [r for r in vehicle.route_uuids if r not in route_uuids]
+        crud_result: dict = await self._vehicle_repository.update_one(vehicle)
+
+        if crud_result["success"]:
+            # Update driver if vehicle is assigned to one using get_by_vehicle
+            driver_result = await self._driver_user_repository.get_by_vehicle(vehicle_uuid=vehicle_uuid)
+            if driver_result["success"]:
+                driver = DriverUserModel(**driver_result["data"])
+                driver.vehicle = vehicle  # Update with new route data
+                await self._driver_user_repository.update_one(driver)
+
+            result.update({
+                "code": 200, "success": True, "message": "Routes removed successfully", "data": {"vehicle": vehicle.model_dump()}})
+        else:
+            result.update({
+                "code": 500, "success": False, "message": "A problem occurred while removing routes", "error": crud_result.get("error", "UNKNOWN_ERROR")})
         return result
 
 admin_vehicle_management_service = AdminVehicleManagementService()

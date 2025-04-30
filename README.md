@@ -1352,6 +1352,54 @@ Assigns routes to a vehicle.
 }
 ```
 
+### Remove Routes from Vehicle
+`PATCH /api/admin/management/vehicle/remove_routes`
+Assigns routes to a vehicle.
+**Request Body:**
+```json
+{
+  "vehicle_uuid": "string",
+  "route_uuids": ["string"]
+}
+```
+**Headers:**
+- `Authorization`: Bearer token (Admin token required)
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Routes assigned successfully",
+  "data": {
+    "vehicle": {
+      "uuid": "vehicle-uuid-123",
+      "vehicle_brand": "Mercedes",
+      "vehicle_model": "Sprinter",
+      "vehicle_year": "2023",
+      "plate_number": "06 ABC 123",
+      "route_uuids": []
+    }
+  },
+  "error": ""
+}
+```
+**Error Response:**
+- 400: Routes not assigned to a vehicle
+- 404: Vehicle not found
+- 500: A problem occured while removing routes.
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Vehicle not found",
+  "data": {},
+  "error": ""
+}
+```
+
+
 ## Driver Endpoints
 ### Get Vehicle
 `GET /api/driver/get_vehicle/{driver_uid}`
