@@ -12,6 +12,7 @@ from src.repository.admin_user_repository import admin_user_repository
 from src.repository.driver_user_repository import driver_user_repository
 from src.repository.route_repository import route_repository
 from src.repository.vehicle_repository import vehicle_repository
+from src.repository.journal_repository import journal_repository
 
 from src.routes.end_user_auth_route import end_user_auth_router
 from src.routes.admin_user_auth_route import admin_user_auth_router
@@ -30,7 +31,8 @@ async def lifespan(app: FastAPI):
             end_user_repository.ensure_db_setup(),
             driver_user_repository.ensure_db_setup(),
             route_repository.ensure_db_setup(),
-            vehicle_repository.ensure_db_setup()
+            vehicle_repository.ensure_db_setup(),
+            journal_repository.ensure_db_setup()
         )
     except Exception as e:
         raise e

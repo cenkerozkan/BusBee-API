@@ -82,6 +82,20 @@ class VehicleRepository(RepositoryBaseClass):
             self._logger.error(f"Failed to get vehicles: {e}")
             return []
 
+    async def get_one_by_uuid(
+            self,
+            vehicle_uuid: str
+    ) -> VehicleModel | None:
+        self._logger.info(f"Getting vehicle for uuid: {vehicle_uuid}")
+        try:
+            vehicle = await self._collection.find_one({"uuid": vehicle_uuid})
+            if vehicle:
+                return VehicleModel(**vehicle)
+            return None
+        except Exception as e:
+            self._logger.error(f"Failed to get vehicle: {e}")
+            return None
+
     async def update_one(
             self,
             document: VehicleModel

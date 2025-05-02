@@ -768,9 +768,7 @@ Assigns a vehicle to a driver.
         "vehicle_year": 2024,
         "plate_number": "06 BTU 495",
         "is_started": false,
-        "route_uuids": [
-          "46ef0968-14bd-4a86-8428-15416075e463"
-        ]
+        "route_uuid": "string"
       }
     }
   },
@@ -1116,7 +1114,7 @@ Creates a new vehicle.
   "vehicle_model": "string",
   "vehicle_year": "string",
   "plate_number": "string",
-  "route_uuids": ["string"]
+  "route_uuid": "string"
 }
 ```
 **Headers:**
@@ -1128,12 +1126,15 @@ Creates a new vehicle.
   "success": true,
   "message": "Vehicle created successfully",
   "data": {
-    "uuid": "vehicle-uuid-123",
-    "vehicle_brand": "Mercedes",
-    "vehicle_model": "Sprinter",
-    "vehicle_year": "2023",
-    "plate_number": "06 ABC 123",
-    "route_uuids": []
+    "vehicle": {
+      "uuid": "f5488f20-f1b1-4c5b-9c79-70daa1d3c19c",
+      "vehicle_brand": "Mercedes-Benz",
+      "vehicle_model": "Conecto",
+      "vehicle_year": 2022,
+      "plate_number": "34ABC123",
+      "is_started": false,
+      "route_uuid": null
+    }
   },
   "error": ""
 }
@@ -1166,12 +1167,24 @@ Retrieves all vehicles.
   "data": {
     "vehicles": [
       {
-        "uuid": "vehicle-uuid-123",
-        "vehicle_brand": "Mercedes",
-        "vehicle_model": "Sprinter",
-        "vehicle_year": "2023",
-        "plate_number": "06 ABC 123",
-        "route_uuids": ["route-uuid-1", "route-uuid-2"]
+        "uuid": "f5488f20-f1b1-4c5b-9c79-70daa1d3c19c",
+        "vehicle_brand": "Mercedes-Benz",
+        "vehicle_model": "Conecto",
+        "vehicle_year": 2022,
+        "plate_number": "34ABC123",
+        "is_started": false,
+        "route_uuid": null,
+        "route": null
+      },
+      {
+        "uuid": "f082110a-34f5-4745-9ddf-e2c3f465fb05",
+        "vehicle_brand": "Mercedes-Benz",
+        "vehicle_model": "Conecto",
+        "vehicle_year": 2023,
+        "plate_number": "34ABC122",
+        "is_started": false,
+        "route_uuid": null,
+        "route": null
       }
     ]
   },
@@ -1203,7 +1216,7 @@ Updates an existing vehicle.
   "vehicle_model": "string",
   "vehicle_year": "string",
   "plate_number": "string",
-  "route_uuids": ["string"]
+  "route_uuid": "string" | null
 }
 ```
 **Headers:**
@@ -1222,7 +1235,7 @@ Updates an existing vehicle.
     "vehicle_model": "Sprinter",
     "vehicle_year": "2023",
     "plate_number": "06 ABC 123",
-    "route_uuids": ["route-uuid-1", "route-uuid-2"]
+    "route_uuid": "string" | null
   },
   "error": ""
 }
@@ -1311,7 +1324,7 @@ Assigns routes to a vehicle.
 ```json
 {
   "vehicle_uuid": "string",
-  "route_uuids": ["string"]
+  "route_uuid": "string"
 }
 ```
 **Headers:**
@@ -1331,7 +1344,7 @@ Assigns routes to a vehicle.
       "vehicle_model": "Sprinter",
       "vehicle_year": "2023",
       "plate_number": "06 ABC 123",
-      "route_uuids": ["route-uuid-1", "route-uuid-2"]
+      "route_uuid": "string"
     }
   },
   "error": ""
@@ -1347,7 +1360,7 @@ Assigns routes to a vehicle.
 {
   "success": false,
   "message": "Vehicle not found",
-  "data": null,
+  "data": {},
   "error": ""
 }
 ```
@@ -1359,7 +1372,7 @@ Assigns routes to a vehicle.
 ```json
 {
   "vehicle_uuid": "string",
-  "route_uuids": ["string"]
+  "route_uuid": "string"
 }
 ```
 **Headers:**
@@ -1379,7 +1392,7 @@ Assigns routes to a vehicle.
       "vehicle_model": "Sprinter",
       "vehicle_year": "2023",
       "plate_number": "06 ABC 123",
-      "route_uuids": []
+      "route_uuid": null
     }
   },
   "error": ""
@@ -1427,7 +1440,7 @@ Retrieves the vehicle assigned to the driver.
       "vehicle_model": "Sprinter",
       "vehicle_year": "2023",
       "plate_number": "06 ABC 123",
-      "route_uuids": ["route-uuid-1", "route-uuid-2"]
+      "route_uuid": "string" | null,
     }
   },
   "error": ""
@@ -1465,18 +1478,30 @@ Retrieves the route assigned to the vehicle of the driver.
 ```json
 {
   "success": true,
-  "message": "Route retrieved successfully",
+  "message": "Vehicle routes retrieved successfully",
   "data": {
     "route": {
-      "uuid": "route-uuid-123",
-      "route_name": "Morning Express Route 1",
-      "created_at": "2024-03-29T10:00:00",
-      "updated_at": "2024-03-29T10:00:00",
-      "start_time": "08:00",
+      "uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d",
+      "route_name": "Campus Loop Route",
+      "created_at": "2025-04-30T15:46:48.866020",
+      "updated_at": "2025-04-30T15:46:48.866025",
+      "start_time": "09:30",
       "stops": [
         {
-          "lat": 41.0082,
-          "lon": 28.9784
+          "lat": 39.970539,
+          "lon": 32.83588
+        },
+        {
+          "lat": 39.971234,
+          "lon": 32.836012
+        },
+        {
+          "lat": 39.969876,
+          "lon": 32.834567
+        },
+        {
+          "lat": 39.968765,
+          "lon": 32.83389
         }
       ]
     }
@@ -1496,5 +1521,145 @@ Retrieves the route assigned to the vehicle of the driver.
   "message": "Vehicle not found",
   "data": {},
   "error": ""
+}
+```
+
+### Start Journey
+`POST /api/driver/start_journey/{driver_uid}`
+Starts the journey for the driver.
+**Parameters:**
+- `driver_uid`: UID of the driver
+
+**Headers:**
+- `Authorization`: Bearer token (Driver token required)
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Journey started successfully",
+  "data": {
+    "journal": {
+      "journal_date": "30-04-2025",
+      "driver_name": "Cenker",
+      "driver_last_name": "Özkan",
+      "created_at": "2025-04-30T21:40:34.342111",
+      "updated_at": "2025-04-30T21:40:34.342116",
+      "journal_uuid": "88280b2e-8ac4-4603-b2f7-0f28aac73fd7",
+      "journal_route": {
+        "uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d",
+        "route_name": "Campus Loop Route",
+        "created_at": "2025-04-30T15:46:48.866020",
+        "updated_at": "2025-04-30T15:46:48.866025",
+        "start_time": "09:30",
+        "stops": [
+          {
+            "lat": 39.970539,
+            "lon": 32.83588
+          },
+          {
+            "lat": 39.971234,
+            "lon": 32.836012
+          },
+          {
+            "lat": 39.969876,
+            "lon": 32.834567
+          },
+          {
+            "lat": 39.968765,
+            "lon": 32.83389
+          }
+        ]
+      },
+      "journal_vehicle": {
+        "uuid": "f5488f20-f1b1-4c5b-9c79-70daa1d3c19c",
+        "vehicle_brand": "Mercedes-Benz",
+        "vehicle_model": "Conecto",
+        "vehicle_year": 2022,
+        "plate_number": "34ABC123",
+        "is_started": false,
+        "route_uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d"
+      },
+      "driver_uid": "HLAuyB1sGIVV9LuIw6WikOPqLZ42",
+      "locations": []
+    }
+  },
+  "error": ""
+}
+````
+
+### Stop Journey
+`POST /api/driver/stop_journey/{driver_uid}`
+Stops the journey for the driver.
+
+**Parameters:**
+- `driver_uid`: UID of the driver
+
+**Headers:**
+- `Authorization`: Bearer token (Driver token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with success message
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Journey stopped successfully",
+  "data": {},
+  "error": ""
+}
+```
+**Error Response:**
+- 500: Failed to stop journey
+- 404: Bu şoföre atanmış bir araç bulunamadı
+- 400: Bu araç zaten durdurulmuş
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Bu araç zaten durdurulmuş",
+  "data": {},
+  "error": ""
+}
+```
+
+### Websocket Location Updates (By Driver)
+`ws://busops-acb3c422b0e4.herokuapp.com/driver/update_location`
+
+**Authentication**
+Include the API key in the request headers as this:
+DRIVER-API-KEY: your-api-key-here
+
+**Payload String**
+```json
+{
+  "lat": 39.859570,
+  "lon": 32.785186,
+  "timestamp": "2024-03-21T14:30:00",
+  "journal_uuid": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Success Response:**
+```json string
+{
+  "code": 200,
+  "success": true,
+  "message": "",
+  "error": "",
+  "data": {}
+}
+```
+**Error Response:**
+```json string
+{
+  "code": 400,
+  "success": false,
+  "message": " ",
+  "error": "",
+  "data": null
 }
 ```

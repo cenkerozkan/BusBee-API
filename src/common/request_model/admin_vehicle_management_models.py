@@ -6,7 +6,7 @@ class NewVehicleModel(BaseModel):
     vehicle_model: str
     vehicle_year: int
     plate_number: str
-    route_uuids: list[str] = []
+    route_uuid: str | None = None
 
 class UpdateVehicleModel(BaseModel):
     uuid: str
@@ -14,11 +14,11 @@ class UpdateVehicleModel(BaseModel):
     vehicle_model: str
     vehicle_year: int
     plate_number: str
-    route_uuids: list[str] = []
+    route_uuid: str | None = None
 
 class DeleteVehicleModel(BaseModel):
     uuid: str
 
-class AssignRoutesModel(BaseModel):
+class AssignRouteModel(BaseModel):
     vehicle_uuid: str
-    route_uuids: list[str]
+    route_uuid: str

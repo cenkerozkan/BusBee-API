@@ -10,7 +10,7 @@ from ..common.request_model.auth_route_models import *
 from ..common.response_model.response_model import ResponseModel
 from ..common.request_model.auth_route_models import  AddAdminUserModel
 from ..common.util.logger import get_logger
-from ..common.util.get_admin_api_key import validate_admin_api_key
+from ..common.util.admin_key_validator import validate_admin_api_key
 from ..common.request_model.auth_route_models import RemoveAdminUserModel
 
 from ..service.admin_user_auth_service import admin_user_auth_service

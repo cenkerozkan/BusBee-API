@@ -8,7 +8,7 @@ from fastapi.security.api_key import APIKeyHeader
 from ..common.request_model.auth_route_models import *
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.logger import get_logger
-from ..common.util.get_admin_api_key import validate_admin_api_key
+from ..common.util.admin_key_validator import validate_admin_api_key
 from ..common.request_model.admin_driver_management_models import *
 
 from ..service.admin_driver_management_service import admin_management_service

@@ -40,14 +40,7 @@ class AdminDriverManagementService:
 
         except Exception as e:
             self._logger.error(f"Failed to create driver user: {e}")
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Failed to create driver user",
-                    "error": str(e)
-                }
-            )
+            result.update({"code": 500, "success": False, "message": "Failed to create driver user", "error": str(e)})
             return result
 
         if firebase_result:
@@ -118,14 +111,7 @@ class AdminDriverManagementService:
 
         except Exception as e:
             self._logger.error(f"Failed to update driver phone number: {e}")
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Failed to update driver phone number",
-                    "error": str(e)
-                }
-            )
+            result.update({"code": 500, "success": False, "message": "Failed to update driver phone number", "error": str(e)})
             return result
 
         if firebase_response is True:
@@ -134,23 +120,9 @@ class AdminDriverManagementService:
             is_updated = asyncio.run(self._driver_user_repository.update_one(driver_user))
 
             if is_updated:
-                result.update(
-                    {
-                        "code": 200,
-                        "success": True,
-                        "message": "Driver phone number updated",
-                        "data": driver_user.model_dump()
-                    }
-                )
+                result.update({"code": 200, "success": True, "message": "Driver phone number updated", "data": driver_user.model_dump()})
             else:
-                result.update(
-                    {
-                        "code": 500,
-                        "success": False,
-                        "message": "Failed to update driver phone number",
-                        "error": get_error_message("failed_to_update_driver_phone_number")
-                    }
-                )
+                result.update({"code": 500, "success": False, "message": "Failed to update driver phone number", "error": get_error_message("failed_to_update_driver_phone_number")})
 
         return result
 
@@ -172,34 +144,13 @@ class AdminDriverManagementService:
 
         except Exception as e:
             self._logger.error(f"Failed to get drivers: {e}")
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Failed to get drivers",
-                    "error": str(e)
-                }
-            )
+            result.update({"code": 500, "success": False, "message": "Failed to get drivers", "error": str(e)})
             return result
 
         if len(drivers) == 0:
-            result.update(
-                {
-                    "code": 404,
-                    "success": True,
-                    "message": "No drivers found",
-                    "data": {}
-                }
-            )
+            result.update({"code": 404, "success": True, "message": "No drivers found", "data": {}})
         else:
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Drivers retrieved",
-                    "data": {"drivers": [driver.model_dump() for driver in drivers]}
-                }
-            )
+            result.update({"code": 200, "success": True, "message": "Drivers retrieved", "data": {"drivers": [driver.model_dump() for driver in drivers]}})
         return result
 
     async def assign_vehicle_to_driver(self, driver_uid: str, vehicle_uuid: str) -> dict:
@@ -214,41 +165,24 @@ class AdminDriverManagementService:
         # Fetch the driver
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if not driver:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "Driver not found"
-            })
+            result.update({"code": 404, "success": False, "message": "Driver not found"})
             return result
 
         # Fetch the vehicle
         vehicles = await self._vehicle_repository.get_all()
         vehicle = next((v for v in vehicles if v.uuid == vehicle_uuid), None)
         if not vehicle:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "Vehicle not found"
-            })
+            result.update({"code": 404, "success": False, "message": "Vehicle not found"})
             return result
 
         # Assign the vehicle to the driver
         driver.vehicle = vehicle
         update_result = await self._driver_user_repository.update_one(driver)
         if not update_result:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": "Failed to assign vehicle to driver"
-            })
+            result.update({"code": 500, "success": False, "message": "Failed to assign vehicle to driver"})
             return result
 
-        result.update({
-            "code": 200,
-            "success": True,
-            "message": "Vehicle assigned to driver successfully",
-            "data": {"driver": driver.model_dump()}
-        })
+        result.update({"code": 200, "success": True, "message": "Vehicle assigned to driver successfully", "data": {"driver": driver.model_dump()}})
         return result
 
     async def remove_vehicle_from_driver(
@@ -277,31 +211,17 @@ class AdminDriverManagementService:
 
         # Check if driver has a vehicle
         if not driver.vehicle:
-            result.update({
-                "code": 400,
-                "success": False,
-                "message": "Driver has no vehicle assigned"
-            })
+            result.update({"code": 400, "success": False, "message": "Driver has no vehicle assigned"})
             return result
 
         # Remove vehicle from driver
         driver.vehicle = None
         update_result = await self._driver_user_repository.update_one(driver)
         if not update_result:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": "Failed to remove vehicle from driver",
-                "error": "Database error"
-            })
+            result.update({ "code": 500, "success": False, "message": "Failed to remove vehicle from driver", "error": "Database error"})
             return result
 
-        result.update({
-            "code": 200,
-            "success": True,
-            "message": "Vehicle removed from driver successfully",
-            "data": {"driver": driver.model_dump()}
-        })
+        result.update({ "code": 200, "success": True, "message": "Vehicle removed from driver successfully", "data": {"driver": driver.model_dump()}})
         return result
 
 

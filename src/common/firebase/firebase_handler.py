@@ -124,6 +124,7 @@ class FirebaseHandler:
             self,
             user_uid: str
     ) -> bool:
+        self._logger.info(f"Deleting user with user uid: {user_uid}")
         auth.delete_user(user_uid, app=self._app)
         return True
 

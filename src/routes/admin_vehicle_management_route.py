@@ -96,15 +96,15 @@ async def delete_vehicle_by_plate(
         ).model_dump()
     )
 
-@admin_vehicle_management_router.patch("/assign_routes", tags=["Admin Vehicle Management"])
-async def assign_routes(
-        assignment: AssignRoutesModel,
+@admin_vehicle_management_router.patch("/assign_route", tags=["Admin Vehicle Management"])
+async def assign_route(
+        assignment: AssignRouteModel,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
-    logger.info(f"Assign routes request for vehicle: {assignment.vehicle_uuid}")
-    result = await admin_vehicle_management_service.assign_routes(
+    logger.info(f"Assign route request for vehicle: {assignment.vehicle_uuid}")
+    result = await admin_vehicle_management_service.assign_route(
         assignment.vehicle_uuid,
-        assignment.route_uuids
+        assignment.route_uuid
     )
     return JSONResponse(
         status_code=result.get("code", 500),
@@ -116,22 +116,19 @@ async def assign_routes(
         ).model_dump()
     )
 
-@admin_vehicle_management_router.patch("/delete_routes", tags=["Admin Vehicle Management"])
-async def delete_routes(
-        assignment: AssignRoutesModel,
+@admin_vehicle_management_router.patch("/delete_route/{vehicle_uuid}", tags=["Admin Vehicle Management"])
+async def delete_route(
+        vehicle_uuid: str,
         jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ) -> JSONResponse:
-    logger.info(f"Delete routes request for vehicle: {assignment.vehicle_uuid}")
-    result = await admin_vehicle_management_service.delete_routes(
-        assignment.vehicle_uuid,
-        assignment.route_uuids
-    )
+    logger.info(f"Delete route request for vehicle: {vehicle_uuid}")
+    result = await admin_vehicle_management_service.delete_route(vehicle_uuid)
     return JSONResponse(
-        status_code=result.get("code", 500),
+        status_code=result.get("code"),
         content=ResponseModel(
-            success=result.get("success", False),
-            message=result.get("message", ""),
-            data=result.get("data", {}),
-            error=result.get("error", "")
+            success=result.get("success"),
+            message=result.get("message"),
+            data=result.get("data"),
+            error=result.get("error")
         ).model_dump()
     )
