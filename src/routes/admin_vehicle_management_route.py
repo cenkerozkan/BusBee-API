@@ -6,6 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from ..common.request_model.admin_vehicle_management_models import *
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.logger import get_logger
+from ..common.util.jwt_validator import jwt_validator
 from ..service.admin_vehicle_management_service import admin_vehicle_management_service
 
 logger = get_logger(__name__)
@@ -15,8 +16,12 @@ admin_vehicle_management_router = APIRouter(prefix="/admin/management/vehicle", 
 @admin_vehicle_management_router.post("/create", tags=["Admin Vehicle Management"])
 async def create_vehicle(
         vehicle_data: NewVehicleModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Create vehicle request for plate number: {vehicle_data.plate_number}")
     result = await admin_vehicle_management_service.create_vehicle(vehicle_data)
     return JSONResponse(
@@ -31,8 +36,12 @@ async def create_vehicle(
 
 @admin_vehicle_management_router.get("/get_all", tags=["Admin Vehicle Management"])
 async def get_all_vehicles(
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info("Get all vehicles request")
     result = await admin_vehicle_management_service.get_all_vehicles()
     return JSONResponse(
@@ -48,8 +57,12 @@ async def get_all_vehicles(
 @admin_vehicle_management_router.patch("/update", tags=["Admin Vehicle Management"])
 async def update_vehicle(
         vehicle_data: UpdateVehicleModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Update vehicle request for uuid: {vehicle_data.uuid}")
     result = await admin_vehicle_management_service.update_vehicle(vehicle_data)
     return JSONResponse(
@@ -65,8 +78,12 @@ async def update_vehicle(
 @admin_vehicle_management_router.delete("/delete/{vehicle_uuid}", tags=["Admin Vehicle Management"])
 async def delete_vehicle(
         vehicle_uuid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Delete vehicle request for uuid: {vehicle_uuid}")
     result = await admin_vehicle_management_service.delete_vehicle(vehicle_uuid)
     return JSONResponse(
@@ -82,8 +99,12 @@ async def delete_vehicle(
 @admin_vehicle_management_router.delete("/delete_by_plate/{plate_number}", tags=["Admin Vehicle Management"])
 async def delete_vehicle_by_plate(
         plate_number: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Delete vehicle request for plate number: {plate_number}")
     result = await admin_vehicle_management_service.delete_vehicle_by_plate(plate_number)
     return JSONResponse(
@@ -99,8 +120,12 @@ async def delete_vehicle_by_plate(
 @admin_vehicle_management_router.patch("/assign_route", tags=["Admin Vehicle Management"])
 async def assign_route(
         assignment: AssignRouteModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Assign route request for vehicle: {assignment.vehicle_uuid}")
     result = await admin_vehicle_management_service.assign_route(
         assignment.vehicle_uuid,
@@ -119,8 +144,12 @@ async def assign_route(
 @admin_vehicle_management_router.patch("/delete_route/{vehicle_uuid}", tags=["Admin Vehicle Management"])
 async def delete_route(
         vehicle_uuid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Delete route request for vehicle: {vehicle_uuid}")
     result = await admin_vehicle_management_service.delete_route(vehicle_uuid)
     return JSONResponse(

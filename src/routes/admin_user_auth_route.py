@@ -11,6 +11,7 @@ from ..common.response_model.response_model import ResponseModel
 from ..common.request_model.auth_route_models import  AddAdminUserModel
 from ..common.util.logger import get_logger
 from ..common.util.admin_key_validator import validate_admin_api_key
+from ..common.util.jwt_validator import jwt_validator
 from ..common.request_model.auth_route_models import RemoveAdminUserModel
 
 from ..service.admin_user_auth_service import admin_user_auth_service
@@ -54,34 +55,18 @@ def login(
 @admin_user_auth_router.delete("/delete_account", tags=["Admin User Auth"])
 def delete_account(
         delete_data: DeleteAccountRequest,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
-    jwt = jwt.credentials
-    logger.info(f"Delete account request for {jwt}")
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     delete_result: bool = admin_user_auth_service.delete_account(delete_data.user_uid)
     return JSONResponse(
         status_code=200 if delete_result else 500,
         content=ResponseModel(
             success=delete_result,
             message="Account deleted" if delete_result else "Failed to delete account",
-            data={},
-            error=""
-        ).model_dump()
-    )
-
-@admin_user_auth_router.post("/validate_token", tags=["Admin User Auth"])
-def validate_token(
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-) -> JSONResponse:
-    jwt = jwt.credentials
-    logger.info(f"Validate token request for {jwt}")
-
-    result = admin_user_auth_service.validate_token(jwt)
-    return JSONResponse(
-        status_code=200 if result is True else 401,
-        content=ResponseModel(
-            success=result,
-            message="Token is valid" if result else "Token is invalid",
             data={},
             error=""
         ).model_dump()
@@ -167,10 +152,4 @@ async def get_all_admins(is_key_valid: str = Depends(validate_admin_api_key)) ->
 
     return JSONResponse(
         status_code=403,
-        content=ResponseModel(
-            success=False,
-            message="Unauthorized",
-            data={},
-            error=""
-        ).model_dump()
-    )
+        content=ResponseModel(success=False,message="Unauthorized",data={},error="").model_dump())

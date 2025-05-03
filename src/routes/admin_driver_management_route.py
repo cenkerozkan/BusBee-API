@@ -9,6 +9,7 @@ from ..common.request_model.auth_route_models import *
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.logger import get_logger
 from ..common.util.admin_key_validator import validate_admin_api_key
+from ..common.util.jwt_validator import jwt_validator
 from ..common.request_model.admin_driver_management_models import *
 
 from ..service.admin_driver_management_service import admin_management_service
@@ -19,10 +20,14 @@ admin_driver_management_router = APIRouter(prefix="/admin/management", tags=["Ad
 
 @admin_driver_management_router.get("/get_all_drivers", tags=["Admin Driver Management"])
 async def get_all_drivers(
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),
 ) -> JSONResponse:
     logger.info("Get all drivers request")
     result: dict = await admin_management_service.get_all_drivers()
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
@@ -36,8 +41,12 @@ async def get_all_drivers(
 @admin_driver_management_router.post("/add_driver", tags=["Admin Driver Management"])
 def add_driver(
         driver_data: AddDriverUserModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Add driver request for name: {driver_data.first_name} {driver_data.last_name}")
     if not re.match(r'^(?:\+90|0)?[1-9][0-9]{9}$', driver_data.phone_number):
         return JSONResponse(
@@ -63,8 +72,12 @@ def add_driver(
 @admin_driver_management_router.delete("/delete_driver", tags=["Admin Driver Management"])
 def delete_driver(
         driver_data: DeleteDriverUserModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Delete driver request for phone number: {driver_data.uid}")
     result: bool = admin_management_service.delete_driver(driver_data.uid)
     return JSONResponse(
@@ -80,8 +93,12 @@ def delete_driver(
 @admin_driver_management_router.patch("/update_driver_phone_number", tags=["Admin Driver Management"])
 def update_driver_phone_number(
         driver_data: UpdateDriverPhoneNumberModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Update driver phone number request for driver uid: {driver_data.uid}")
     result: dict = admin_management_service.update_driver_phone_number(driver_data.uid, driver_data.new_phone_number)
     return JSONResponse(
@@ -97,8 +114,12 @@ def update_driver_phone_number(
 @admin_driver_management_router.patch("/assign_vehicle_to_driver", tags=["Admin Driver Management"])
 async def assign_vehicle_to_driver(
         assignment_data: AssignVehicleToDriverModel,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Assign vehicle request for driver UID: {assignment_data.driver_uid} and vehicle UUID: {assignment_data.vehicle_uuid}")
     result: dict = await admin_management_service.assign_vehicle_to_driver(
         assignment_data.driver_uid,
@@ -117,8 +138,12 @@ async def assign_vehicle_to_driver(
 @admin_driver_management_router.patch("/remove_vehicle_from_driver/{driver_uid}", tags=["Admin Driver Management"])
 async def remove_vehicle_from_driver(
         driver_uid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Remove vehicle from driver request for driver UID: {driver_uid}")
     result: dict = await admin_management_service.remove_vehicle_from_driver(driver_uid)
     return JSONResponse(

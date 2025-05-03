@@ -10,6 +10,7 @@ from ..service.end_user_auth_service import EndUserAuthService
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.background_tasks import delete_unverified_email
 from ..common.util.logger import get_logger
+from ..common.util.jwt_validator import jwt_validator  # Import the validator
 
 from ..service.end_user_auth_service import end_user_auth_service
 
@@ -86,10 +87,13 @@ def register(
 @end_user_auth_router.delete("/delete_account", tags=["End User Auth"])
 def delete_account(
         delete_data: DeleteAccountRequest,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
-    jwt = jwt.credentials
-    logger.info(f"Delete account request for {jwt}")
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    logger.info(f"Delete account request for user UID: {delete_data.user_uid}")
     delete_result: bool = end_user_auth_service.delete_account(delete_data.user_uid)
     return JSONResponse(
         status_code=200 if delete_result else 500,
@@ -103,15 +107,19 @@ def delete_account(
 
 @end_user_auth_router.post("/validate_token", tags=["End User Auth"])
 def validate_token(
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
-    jwt = jwt.credentials
-    logger.info(f"Validate token request for {jwt}")
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    # The JWT is already validated by the dependency, so we can proceed.
+    # The original code was extracting and then re-validating.
     return JSONResponse(
-        status_code=200 if end_user_auth_service.validate_token(jwt) else 401,
+        status_code=200,
         content=ResponseModel(
-            success=end_user_auth_service.validate_token(jwt),
-            message="Token is valid" if end_user_auth_service.validate_token(jwt) else "Token is invalid",
+            success=True,
+            message="Token is valid",
             data={},
             error=""
         ).model_dump()
@@ -120,9 +128,12 @@ def validate_token(
 @end_user_auth_router.post("/create_user", tags=["End User Auth"])
 async def create_account(
         user_data: CreateAccountRequest,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
-    jwt = jwt.credentials
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Create account request for {user_data.email}")
     email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
     if not re.match(email_pattern, user_data.email):

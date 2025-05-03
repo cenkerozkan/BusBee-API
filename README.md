@@ -29,7 +29,6 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
 - [Admin User Authentication Endpoints](#admin-user-authentication-endpoints)
   - [Login Admin User](#login-admin-user)
   - [Delete Admin User Account](#delete-admin-user-account)
-  - [Validate Admin Token](#validate-admin-token)
   - [Add Admin User](#add-admin-user)
   - [Remove Admin User](#remove-admin-user)
   - [Get All Admins](#get-all-admins)
@@ -379,26 +378,6 @@ All responses follow the `ResponseModel` format:
   "message": "Failed to delete account",
   "data": null,
   "error": "ADMIN_NOT_FOUND"
-}
-```
-
-### Validate Admin Token
-`POST /api/auth/admin_user/validate_token`
-
-**Headers:**
-- `Authorization`: Bearer token
-
-**Success Response:**
-- Status: 200
-- Body: ResponseModel with validation result
-
-**Success Response Example:**
-```json
-{
-  "success": true,
-  "message": "Token is valid",
-  "data": {},
-  "error": ""
 }
 ```
 

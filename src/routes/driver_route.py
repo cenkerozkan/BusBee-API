@@ -12,6 +12,7 @@ from ..common.util.logger import get_logger
 from ..service.driver_service import driver_service
 from ..common.request_model.driver_models import LocationDataModel
 from ..common.db.model.bus_location_model import BusLocationModel
+from ..common.util.jwt_validator import jwt_validator  # Import the validator
 
 logger = get_logger(__name__)
 load_dotenv()
@@ -22,8 +23,12 @@ driver_router = APIRouter(prefix="/driver", tags=["Driver"])
 @driver_router.get("/get_vehicle/{driver_uid}", tags=["Driver"])
 async def get_vehicle(
         driver_uid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Get vehicle request for driver UID: {driver_uid}")
     result = await driver_service.get_vehicle(driver_uid)
     return JSONResponse(
@@ -39,8 +44,12 @@ async def get_vehicle(
 @driver_router.get("/get_vehicle_route/{driver_uid}", tags=["Driver"])
 async def get_vehicle_route(
         driver_uid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Get vehicle route request for driver UID: {driver_uid}")
     result = await driver_service.get_vehicle_route(driver_uid)
     return JSONResponse(
@@ -56,8 +65,12 @@ async def get_vehicle_route(
 @driver_router.post("/start_journey/{driver_uid}", tags=["Driver"])
 async def start_journey(
         driver_uid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Start journey request for driver UID: {driver_uid}")
     result = await driver_service.start_journey(driver_uid)
     return JSONResponse(
@@ -74,8 +87,12 @@ async def start_journey(
 async def start_journey(
         driver_uid: str,
         journal_uuid: str,
-        jwt: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
 ) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
     logger.info(f"Start journey request for driver UID: {driver_uid}")
     result = await driver_service.stop_journey(driver_uid, journal_uuid)
     return JSONResponse(
