@@ -31,20 +31,7 @@ class AdminVehicleManagementService:
             route_uuid=new_vehicle.route_uuid
         )
         crud_result = await self._vehicle_repository.insert_one(vehicle.model_dump())
-        if crud_result["success"]:
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result["message"],
-                "data": {"vehicle": vehicle.model_dump()}
-            })
-        else:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": crud_result["message"],
-                "error": crud_result["error"]
-            })
+        result.update({"code": 200, "success": True, "message": crud_result["message"], "data": {"vehicle": vehicle.model_dump()}} if crud_result["success"] else {"code": 500, "success": False, "message": crud_result["message"], "error": crud_result["error"]})
         return result
 
     async def get_all_vehicles(self):
@@ -57,12 +44,7 @@ class AdminVehicleManagementService:
         }
         vehicles = await self._vehicle_repository.get_all()
         if not vehicles:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "No vehicles found",
-                "data": {"vehicles": []}
-            })
+            result.update({"code": 404, "success": False, "message": "No vehicles found", "data": {"vehicles": []}})
             return result
 
         routes: list = await self._route_repository.get_all()
@@ -77,12 +59,7 @@ class AdminVehicleManagementService:
                 vehicle_data["route"] = None
             enriched_vehicles.append(vehicle_data)
 
-        result.update({
-            "code": 200,
-            "success": True,
-            "message": "Vehicles retrieved successfully",
-            "data": {"vehicles": enriched_vehicles}
-        })
+        result.update({"code": 200, "success": True, "message": "Vehicles retrieved successfully", "data": {"vehicles": enriched_vehicles}})
         return result
 
     async def update_vehicle(self, updated_vehicle):
@@ -95,20 +72,7 @@ class AdminVehicleManagementService:
         }
         vehicle = VehicleModel(**updated_vehicle.model_dump())
         crud_result = await self._vehicle_repository.update_one(vehicle)
-        if crud_result["success"]:
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result["message"],
-                "data": {"vehicle": vehicle.model_dump()}
-            })
-        else:
-            result.update({
-                "code": 404 if crud_result["message"] == "Vehicle does not exist" else 500,
-                "success": False,
-                "message": crud_result["message"],
-                "error": crud_result["error"]
-            })
+        result.update({"code": 200, "success": True, "message": crud_result["message"], "data": {"vehicle": vehicle.model_dump()}} if crud_result["success"] else {"code": 404 if crud_result["message"] == "Vehicle does not exist" else 500, "success": False, "message": crud_result["message"], "error": crud_result["error"]})
         return result
 
     async def delete_vehicle(self, vehicle_uuid):
@@ -121,26 +85,10 @@ class AdminVehicleManagementService:
         }
         driver_crud_result: dict = await self._driver_user_repository.get_by_vehicle(vehicle_uuid=vehicle_uuid)
         if driver_crud_result.get("success"):
-            result.update({
-                "code": 409, "success": False,
-                "message": f"Vehicle is assigned to the driver {driver_crud_result.get("data").get("first_name")} {driver_crud_result.get("data").get("last_name")}",
-                "error": driver_crud_result["error"]
-            })
+            result.update({"code": 409, "success": False, "message": f"Vehicle is assigned to the driver {driver_crud_result.get("data").get("first_name")} {driver_crud_result.get("data").get("last_name")}", "error": driver_crud_result["error"]})
             return result
         crud_result: dict = await self._vehicle_repository.delete_one(vehicle_uuid)
-        if crud_result.get("success"):
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result["message"]
-            })
-        else:
-            result.update({
-                "code": 404 if crud_result["message"] == "Vehicle not found" else 500,
-                "success": False,
-                "message": crud_result["message"],
-                "error": crud_result["error"]
-            })
+        result.update({"code": 200, "success": True, "message": crud_result["message"]} if crud_result.get("success") else {"code": 404 if crud_result["message"] == "Vehicle not found" else 500, "success": False, "message": crud_result["message"], "error": crud_result["error"]})
         return result
 
     async def delete_vehicle_by_plate(self, plate_number):
@@ -153,26 +101,10 @@ class AdminVehicleManagementService:
         }
         driver_crud_result: dict = await self._driver_user_repository.get_by_vehicle(plate_number=plate_number)
         if driver_crud_result.get("success"):
-            result.update({
-                "code": 409, "success": False,
-                "message": f"Vehicle is assigned to the driver {driver_crud_result.get("data").get("first_name")} {driver_crud_result.get("data").get("last_name")}",
-                "error": driver_crud_result["error"]
-            })
+            result.update({"code": 409, "success": False, "message": f"Vehicle is assigned to the driver {driver_crud_result.get("data").get("first_name")} {driver_crud_result.get("data").get("last_name")}", "error": driver_crud_result["error"]})
             return result
         vehicle_crud_result: dict = await self._vehicle_repository.delete_one_by_plate(plate_number)
-        if vehicle_crud_result.get("success"):
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": vehicle_crud_result["message"]
-            })
-        else:
-            result.update({
-                "code": 404 if vehicle_crud_result["message"] == "Vehicle not found" else 500,
-                "success": False,
-                "message": vehicle_crud_result["message"],
-                "error": vehicle_crud_result["error"]
-            })
+        result.update({"code": 200, "success": True, "message": vehicle_crud_result["message"]} if vehicle_crud_result.get("success") else {"code": 404 if vehicle_crud_result["message"] == "Vehicle not found" else 500, "success": False, "message": vehicle_crud_result["message"], "error": vehicle_crud_result["error"]})
         return result
 
     async def assign_route(self, vehicle_uuid: str, route_uuid: str):
@@ -183,63 +115,34 @@ class AdminVehicleManagementService:
             "error": "",
             "data": {}
         }
-        # Get vehicle
         vehicles = await self._vehicle_repository.get_all()
         vehicle = next((v for v in vehicles if v.uuid == vehicle_uuid), None)
         if not vehicle:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "Vehicle not found"
-            })
+            result.update({"code": 404, "success": False, "message": "Vehicle not found"})
             return result
 
-        # Check if vehicle already has a route
         if vehicle.route_uuid:
-            result.update({
-                "code": 409,
-                "success": False,
-                "message": "Vehicle already has a route assigned",
-                "error": f"Vehicle already has route: {vehicle.route_uuid}"
-            })
+            result.update({"code": 409, "success": False, "message": "Vehicle already has a route assigned", "error": f"Vehicle already has route: {vehicle.route_uuid}"})
             return result
 
-        # Verify route exists
         route = await self._route_repository.get_one_by_uuid(route_uuid)
         if not route:
-            result.update({
-                "code": 400,
-                "success": False,
-                "message": "Invalid route UUID provided",
-                "error": f"Route not found: {route_uuid}"
-            })
+            result.update({"code": 400, "success": False, "message": "Invalid route UUID provided", "error": f"Route not found: {route_uuid}"})
             return result
 
-        # Assign route to vehicle
         vehicle.route_uuid = route_uuid
         crud_result = await self._vehicle_repository.update_one(vehicle)
 
         if crud_result["success"]:
-            # Update driver if vehicle is assigned to one using get_by_vehicle
             driver_result = await self._driver_user_repository.get_by_vehicle(vehicle_uuid=vehicle_uuid)
             if driver_result["success"]:
                 driver = DriverUserModel(**driver_result["data"])
-                driver.vehicle = vehicle  # Update with new route data
+                driver.vehicle = vehicle
                 await self._driver_user_repository.update_one(driver)
 
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": "Route assigned successfully",
-                "data": {"vehicle": vehicle.model_dump()}
-            })
+            result.update({"code": 200, "success": True, "message": "Route assigned successfully", "data": {"vehicle": vehicle.model_dump()}})
         else:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": crud_result["message"],
-                "error": crud_result["error"]
-            })
+            result.update({"code": 500, "success": False, "message": crud_result["message"], "error": crud_result["error"]})
         return result
 
     async def delete_route(self, vehicle_uuid: str) -> dict:
@@ -250,51 +153,29 @@ class AdminVehicleManagementService:
             "error": "",
             "data": {}
         }
-        # Get vehicle
         vehicles = await self._vehicle_repository.get_all()
         vehicle = next((v for v in vehicles if v.uuid == vehicle_uuid), None)
         if not vehicle:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "Vehicle not found"
-            })
+            result.update({"code": 404, "success": False, "message": "Vehicle not found"})
             return result
 
-        # Check if vehicle has a route assigned
         if not vehicle.route_uuid:
-            result.update({
-                "code": 400,
-                "success": False,
-                "message": "Vehicle has no route assigned"
-            })
+            result.update({"code": 400, "success": False, "message": "Vehicle has no route assigned"})
             return result
 
-        # Remove route from vehicle
         vehicle.route_uuid = None
         crud_result = await self._vehicle_repository.update_one(vehicle)
 
         if crud_result["success"]:
-            # Update driver if vehicle is assigned to one
             driver_result = await self._driver_user_repository.get_by_vehicle(vehicle_uuid=vehicle_uuid)
             if driver_result["success"]:
                 driver = DriverUserModel(**driver_result["data"])
-                driver.vehicle = vehicle  # Update with removed route
+                driver.vehicle = vehicle
                 await self._driver_user_repository.update_one(driver)
 
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": "Route removed successfully",
-                "data": {"vehicle": vehicle.model_dump()}
-            })
+            result.update({"code": 200, "success": True, "message": "Route removed successfully", "data": {"vehicle": vehicle.model_dump()}})
         else:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": crud_result["message"],
-                "error": crud_result["error"]
-            })
+            result.update({"code": 500, "success": False, "message": crud_result["message"], "error": crud_result["error"]})
         return result
 
 admin_vehicle_management_service = AdminVehicleManagementService()

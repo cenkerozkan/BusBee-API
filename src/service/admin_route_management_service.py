@@ -24,118 +24,40 @@ class AdminRouteManagementService:
             new_route: NewRoute,
     ) -> dict:
         self._logger.info(f"Creating new route: {new_route}")
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
-        new_route: RouteModel = RouteModel(
-            uuid=str(uuid.uuid4()),
-            route_name=new_route.route_name,
-            start_time=new_route.start_time,
-            created_at=str(dt.datetime.now().isoformat()),
-            updated_at=str(dt.datetime.now().isoformat()),
-            stops=new_route.stops,
-        )
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
+        new_route: RouteModel = RouteModel(uuid=str(uuid.uuid4()), route_name=new_route.route_name, start_time=new_route.start_time, created_at=str(dt.datetime.now().isoformat()), updated_at=str(dt.datetime.now().isoformat()), stops=new_route.stops)
         crud_result: dict = await self._route_repository.insert_one(new_route.model_dump())
-        if crud_result.get("success"):
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result.get("message"),
-                "data": {"route": new_route.model_dump()}
-            })
-        else:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": crud_result.get("message"),
-                "error": crud_result.get("error", "Unknown error occurred"),
-            })
+        result.update({"code": 200, "success": True, "message": crud_result.get("message"), "data": {"route": new_route.model_dump()}} if crud_result.get("success") else {"code": 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
         return result
 
     async def delete_route_by_id(
             self,
             route_id: str,
     ) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
-        # First, find vehicles using this route
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         vehicles = await self._vehicle_repository.get_by_route_uuid(route_id)
-
-        # Remove route from vehicles
         for vehicle in vehicles:
             vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route_id]
             await self._vehicle_repository.update_one(vehicle)
-
-        # Then delete the route
         crud_result: dict = await self._route_repository.delete_one_by_uuid(route_id)
-        if crud_result.get("success"):
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result.get("message")
-            })
-        else:
-            result.update({
-                "code": 404 if crud_result.get("message") == "Route does not exist" else 500,
-                "success": False,
-                "message": crud_result.get("message"),
-                "error": crud_result.get("error", "Unknown error occurred")
-            })
+        result.update({"code": 200, "success": True, "message": crud_result.get("message")} if crud_result.get("success") else {"code": 404 if crud_result.get("message") == "Route does not exist" else 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
         return result
 
     async def delete_route_by_name(
             self,
             route_name: str,
     ) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
-        # First get the route to find its UUID
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         route = await self._route_repository.get_one_by_name(route_name)
         if not route:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "Route does not exist"
-            })
+            result.update({"code": 404, "success": False, "message": "Route does not exist"})
             return result
-
-        # Find vehicles using this route
         vehicles = await self._vehicle_repository.get_by_route_uuid(route.uuid)
-
-        # Remove route from vehicles
         for vehicle in vehicles:
             vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route.uuid]
             await self._vehicle_repository.update_one(vehicle)
-
-        # Then delete the route
         crud_result = await self._route_repository.delete_one_by_name(route_name)
-        if crud_result.get("success"):
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result.get("message")
-            })
-        else:
-            result.update({
-                "code": 404 if crud_result.get("message") == "Route does not exist" else 500,
-                "success": False,
-                "message": crud_result.get("message"),
-                "error": crud_result.get("error", "Unknown error occurred")
-            })
+        result.update({"code": 200, "success": True, "message": crud_result.get("message")} if crud_result.get("success") else {"code": 404 if crud_result.get("message") == "Route does not exist" else 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
         return result
 
     async def update_route(
@@ -143,59 +65,19 @@ class AdminRouteManagementService:
             updated_route: UpdateRouteModel,
     ) -> dict:
         self._logger.info(f"Updating route: {updated_route}")
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         updated_route.updated_at = str(dt.datetime.now().isoformat())
         crud_result: dict = await self._route_repository.update_one(updated_route)
-        if crud_result.get("success"):
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": crud_result.get("message"),
-                "data": {"route": updated_route.model_dump()}
-            })
-        else:
-            result.update({
-                "code": 500,
-                "success": False,
-                "message": crud_result.get("message"),
-                "error": crud_result.get("error", "Unknown error occurred")
-            })
+        result.update({"code": 200, "success": True, "message": crud_result.get("message"), "data": {"route": updated_route.model_dump()}} if crud_result.get("success") else {"code": 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
         return result
 
     async def get_all_routes(self) -> dict:
         self._logger.info("Getting all routes")
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
-
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         routes: list[RouteModel] = await self._route_repository.get_all()
         for i in routes:
             self._logger.info(f"Getting route: {i}")
-        if routes:
-            result.update({
-                "code": 200,
-                "success": True,
-                "message": "Routes retrieved successfully",
-                "data": {"routes": [route.model_dump() for route in routes]},
-            })
-        else:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "No routes found",
-                "data": {"routes": []},
-            })
-
+        result.update({"code": 200, "success": True, "message": "Routes retrieved successfully", "data": {"routes": [route.model_dump() for route in routes]}} if routes else {"code": 404, "success": False, "message": "No routes found", "data": {"routes": []}})
         return result
 
 admin_route_management_service = AdminRouteManagementService()

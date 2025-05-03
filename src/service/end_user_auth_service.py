@@ -38,38 +38,16 @@ class EndUserAuthService:
 
         except Exception as e:
             self._logger.error(f"Login failed: {e}")
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Login failed",
-                    "error": str(e)
-                }
-            )
+            result.update({"code": 500, "success": False, "message": "Login failed", "error": str(e)})
             return result
 
         if "error" in response:
             self._logger.error(f"Login failed: {response['error']}")
-            result.update(
-                {
-                    "code": response.get("error").get("code"),
-                    "success": False,
-                    "message": get_error_message(response.get("error").get("errors")[0].get("message")),
-                }
-            )
+            result.update({"code": response.get("error").get("code"), "success": False, "message": get_error_message(response.get("error").get("errors")[0].get("message"))})
         else:
             firebase_user_info: dict = self._firebase_handler.get_user_info(email)
             user_info: EndUserModel = asyncio.run(self._end_user_repository.get_one(email))
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Login successful",
-                    "refresh_token": response.get("refreshToken"),
-                    "id_token": response.get("idToken"),
-                    "data": user_info.model_dump()
-                }
-            )
+            result.update({"code": 200, "success": True, "message": "Login successful", "refresh_token": response.get("refreshToken"), "id_token": response.get("idToken"), "data": user_info.model_dump()})
         return result
 
     def register(
@@ -96,13 +74,7 @@ class EndUserAuthService:
 
         if "error" in response:
             self._logger.error(f"Registration failed: {response['error']}")
-            result.update(
-                {
-                    "code": response.get("error").get("code"),
-                    "success": False,
-                    "message": get_error_message(response.get("error").get("message")),
-                }
-            )
+            result.update({"code": response.get("error").get("code"), "success": False, "message": get_error_message(response.get("error").get("message"))})
 
         else:
             # Send verification email
@@ -115,16 +87,14 @@ class EndUserAuthService:
                 email=email,
             )
             is_saved: bool = asyncio.run(self._end_user_repository.insert_one(end_user_model.model_dump()))
-            result.update(
-                {
+            result.update({
                     "code": 200,
                     "success": True,
                     "message": "Registration successful",
                     "refresh_token": response.get("refreshToken"),
                     "id_token": response.get("idToken"),
                     "data": end_user_model.model_dump()
-                }
-            )
+                })
         return result
 
     def delete_account(
@@ -173,23 +143,7 @@ class EndUserAuthService:
             last_name=last_name
         )
         crud_result = await self._end_user_repository.insert_one(new_user_model.model_dump())
-        if not crud_result:
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Failed to create account",
-                    "error": "Failed to create account"
-                }
-            )
-        result.update(
-            {
-                "code": 200,
-                "success": True,
-                "message": "Account created successfully",
-                "data": new_user_model.model_dump()
-            }
-        )
+        result.update({"code": 500, "success": False, "message": "Failed to create account", "error": "Failed to create account"} if not crud_result else {"code": 200, "success": True, "message": "Account created successfully", "data": new_user_model.model_dump()})
         return result
 
 end_user_auth_service = EndUserAuthService()

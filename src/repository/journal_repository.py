@@ -53,23 +53,12 @@ class JournalRepository(RepositoryBaseClass):
             self,
             document: JournalModel
     ) -> dict:
-        result = {
-            "success": False,
-            "message": "",
-            "error": ""
-        }
+        result = {"success": False, "message": "", "error": ""}
         try:
             await self._collection.insert_one(document.model_dump())
-            result.update({
-                "success": True,
-                "message": "Journal created successfully"
-            })
+            result.update({"success": True, "message": "Journal created successfully"})
         except Exception as e:
-            result.update({
-                "success": False,
-                "message": "Failed to create journal",
-                "error": str(e)
-            })
+            result.update({"success": False, "message": "Failed to create journal", "error": str(e)})
         return result
 
     async def get_all(self) -> list[JournalModel]:
@@ -89,9 +78,7 @@ class JournalRepository(RepositoryBaseClass):
         self._logger.info(f"Getting journal for uuid: {journal_uuid}")
         try:
             journal = await self._collection.find_one({"journal_uuid": journal_uuid})
-            if journal:
-                return JournalModel(**journal)
-            return None
+            return JournalModel(**journal) if journal else None
         except Exception as e:
             self._logger.error(f"Failed to get journal: {e}")
             return None
@@ -100,71 +87,37 @@ class JournalRepository(RepositoryBaseClass):
             self,
             document: JournalModel
     ) -> dict:
-        result = {
-            "success": False,
-            "message": "",
-            "error": ""
-        }
+        result = {"success": False, "message": "", "error": ""}
         try:
             exists = await self._is_exist(document.journal_uuid)
             if not exists:
-                result.update({
-                    "success": False,
-                    "message": "Journal does not exist"
-                })
+                result.update({"success": False, "message": "Journal does not exist"})
                 return result
 
             await self._collection.update_one(
                 {"journal_uuid": document.journal_uuid},
                 {"$set": document.model_dump()}
             )
-            result.update({
-                "success": True,
-                "message": "Journal updated successfully"
-            })
+            result.update({"success": True, "message": "Journal updated successfully"})
         except Exception as e:
-            result.update({
-                "success": False,
-                "message": "Failed to update journal",
-                "error": str(e)
-            })
+            result.update({"success": False, "message": "Failed to update journal", "error": str(e)})
         return result
 
     async def delete_one(
             self,
             journal_uuid: str
     ) -> dict:
-        result = {
-            "success": False,
-            "message": "",
-            "error": ""
-        }
+        result = {"success": False, "message": "", "error": ""}
         try:
             exists = await self._is_exist(journal_uuid)
             if not exists:
-                result.update({
-                    "success": False,
-                    "message": "Journal not found"
-                })
+                result.update({"success": False, "message": "Journal not found"})
                 return result
 
             delete_result = await self._collection.delete_one({"journal_uuid": journal_uuid})
-            if delete_result.deleted_count > 0:
-                result.update({
-                    "success": True,
-                    "message": "Journal deleted successfully"
-                })
-            else:
-                result.update({
-                    "success": False,
-                    "message": "Journal not found"
-                })
+            result.update({"success": True, "message": "Journal deleted successfully"} if delete_result.deleted_count > 0 else {"success": False, "message": "Journal not found"})
         except Exception as e:
-            result.update({
-                "success": False,
-                "message": "Failed to delete journal",
-                "error": str(e)
-            })
+            result.update({"success": False, "message": "Failed to delete journal", "error": str(e)})
         return result
 
     async def insert_many(self, documents):
@@ -178,11 +131,7 @@ class JournalRepository(RepositoryBaseClass):
             journal_uuid: str,
             location: dict
     ) -> dict:
-        result = {
-            "success": False,
-            "message": "",
-            "error": ""
-        }
+        result = {"success": False, "message": "", "error": ""}
         try:
             exists = await self._is_exist(journal_uuid)
             if not exists:
@@ -205,9 +154,7 @@ class JournalRepository(RepositoryBaseClass):
         self._logger.info(f"Getting journal for driver_uid: {driver_uid}")
         try:
             journal = await self._collection.find_one({"driver_uid": driver_uid})
-            if journal:
-                return JournalModel(**journal)
-            return None
+            return JournalModel(**journal) if journal else None
         except Exception as e:
             self._logger.error(f"Failed to get journal: {e}")
             return None

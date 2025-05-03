@@ -5,6 +5,7 @@ from ..common.base.repository_base_class import RepositoryBaseClass
 from ..common.util.logger import get_logger
 from ..common.db.model.driver_user_model import DriverUserModel
 
+
 class DriverUserRepository(RepositoryBaseClass):
     def __init__(self):
         self._logger = get_logger(__name__)
@@ -64,7 +65,7 @@ class DriverUserRepository(RepositoryBaseClass):
             drivers = self._collection.find()
             async for driver in drivers:
                 result.append(DriverUserModel(**driver))
-        
+
         except Exception as e:
             self._logger.error(f"Failed to get documents: {e}")
             return []
@@ -83,7 +84,6 @@ class DriverUserRepository(RepositoryBaseClass):
         except Exception as e:
             self._logger.error(f"Failed to get document: {e}")
             return None
-
 
     async def update_one(
             self,
@@ -131,12 +131,7 @@ class DriverUserRepository(RepositoryBaseClass):
             vehicle_uuid: str | None = None
     ) -> dict:
         self._logger.info(f"Getting user by plate: {plate_number} or vehicle_uuid: {vehicle_uuid}")
-        result: dict = {
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"success": False, "message": "", "error": "", "data": {}}
         query = {}
 
         # NOTE: This is a new one for me, it seems like mongodb allows
@@ -147,12 +142,14 @@ class DriverUserRepository(RepositoryBaseClass):
             query["vehicle.uuid"] = vehicle_uuid
         else:
             self._logger.warn("Neither plate number nor vehicle UUID provided")
-            return {"success": False, "message": "Herhangi bir araç bilgisi sağlanmadı", "error": ""}
+            result.update({"success": False, "message": "Herhangi bir araç bilgisi sağlanmadı", "error": ""})
+            return result
 
         try:
             user = await self._collection.find_one(query)
-            if user:
-                result.update({"success": True, "message": "User found", "data": user})
+            result.update({"success": True, "message": "User found", "data": user} if user else {"success": False,
+                                                                                                 "message": "User not found",
+                                                                                                 "error": ""})
         except Exception as e:
             self._logger.error(f"Failed to get document: {e}")
             result.update({"success": False, "message": "Failed to extract document.", "error": str(e)})

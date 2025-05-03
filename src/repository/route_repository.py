@@ -1,5 +1,4 @@
 import asyncio
-import uuid
 
 from ..common.db.mongodb_connector import MongoDBConnector
 from ..common.base.repository_base_class import RepositoryBaseClass
@@ -60,10 +59,7 @@ class RouteRepository(RepositoryBaseClass):
         self._logger.info(f"Checking uniqueness for name: {name}")
         try:
             route = await self._collection.find_one({"route_name": name})
-            if route:
-                return False
-            return True
-
+            return not bool(route)
         except Exception as e:
             self._logger.error(f"Failed to check uniqueness for name: {e}")
             return False
@@ -82,9 +78,7 @@ class RouteRepository(RepositoryBaseClass):
             else:
                 return False
 
-            if route:
-                return True
-            return False
+            return bool(route)
 
         except Exception as e:
             self._logger.error(f"Failed to check existence: {e}")

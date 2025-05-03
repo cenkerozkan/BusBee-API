@@ -25,53 +25,20 @@ class AdminUserAuthService:
             email: str,
             password: str
     ) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "refresh_token": "",
-            "id_token":"",
-            "error": "",
-            "data": {}
-        }
-        response: dict
+        result: dict = {"code": 0, "success": False, "message": "", "refresh_token": "", "id_token":"", "error": "", "data": {}}
         try:
             response:dict = self._firebase_handler.login(email, password)
-
         except Exception as e:
             self._logger.error(f"Login failed: {e}")
-            result.update(
-                {
-                    "code": 500,
-                    "success": False,
-                    "message": "Login failed",
-                    "error": str(e)
-                }
-            )
+            result.update({"code": 500, "success": False, "message": "Login failed", "error": str(e)})
             return result
-
         if "error" in response:
             self._logger.error(f"Login failed: {response['error']}")
-            result.update(
-                {
-                    "code": response.get("error").get("code"),
-                    "success": False,
-                    "message": get_error_message(response.get("error").get("errors")[0].get("message")),
-                }
-            )
+            result.update({"code": response.get("error").get("code"), "success": False, "message": get_error_message(response.get("error").get("errors")[0].get("message"))})
         else:
             firebase_user_info: dict = self._firebase_handler.get_user_info(email)
             user_info: AdminUserModel = asyncio.run(self._admin_user_repository.get_one(email))
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Login successful",
-                    "refresh_token": response.get("refreshToken"),
-                    "id_token": response.get("idToken"),
-                    "data": user_info.model_dump()
-                }
-            )
+            result.update({"code": 200, "success": True, "message": "Login successful", "refresh_token": response.get("refreshToken"), "id_token": response.get("idToken"), "data": user_info.model_dump()})
         return result
 
     def delete_account(
@@ -82,11 +49,9 @@ class AdminUserAuthService:
         try:
             self._firebase_handler.delete_user(user_uid)
             asyncio.run(self._admin_user_repository.delete_one_by_uid(user_uid))
-
         except Exception as e:
             self._logger.error(f"Delete account failed: {e}")
             return False
-
         return True
 
     def validate_token(
@@ -104,115 +69,49 @@ class AdminUserAuthService:
             last_name: str
     ) -> dict:
         self._logger.info(f"Add admin user request for {email}")
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         response: dict = {}
         is_saved: bool
-
         try:
             response = self._firebase_handler.create_admin_user(email, password)
-
         except Exception as e:
             self._logger.error(f"Failed to add admin user: {e}")
             result.update({"code": 500, "success": False, "message": "Failed to add admin user", "error": str(e)})
             return result
-
         if response:
-            new_admin_user: AdminUserModel = AdminUserModel(
-                uid=response.get("uid"),
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-                created_at=str(dt.datetime.now().isoformat()),
-                last_active=str(dt.datetime.now().isoformat())
-            )
+            new_admin_user: AdminUserModel = AdminUserModel(uid=response.get("uid"), email=email, first_name=first_name, last_name=last_name, created_at=str(dt.datetime.now().isoformat()), last_active=str(dt.datetime.now().isoformat()))
             is_saved: bool = asyncio.run(self._admin_user_repository.insert_one(new_admin_user.model_dump()))
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Admin user added",
-                    "data": new_admin_user.model_dump()
-                }
-            )
-
+            result.update({"code": 200, "success": True, "message": "Admin user added", "data": new_admin_user.model_dump()})
         return result
 
     def remove_admin_user(
             self,
             user_uid: str
     ) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         firebase_response: bool = False
         is_deleted: bool = False
-
         try:
             response = self._firebase_handler.delete_user(user_uid)
             is_deleted = asyncio.run(self._admin_user_repository.delete_one_by_uid(user_uid))
-
         except Exception as e:
             self._logger.error(f"Failed to remove admin user: {e}")
             result.update({"code": 500, "success": False, "message": "Failed to remove admin user", "error": str(e)})
             return result
-
         if response and is_deleted:
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Admin user removed"
-                }
-            )
+            result.update({"code": 200, "success": True, "message": "Admin user removed"})
         return result
 
     async def get_all_admins(self) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         admins: list[AdminUserModel] | None
-
         try:
             admins = await self._admin_user_repository.get_all()
-
         except Exception as e:
             self._logger.error(f"Failed to get all admins: {e}")
             result.update({"code": 500, "success": False, "message": str(e)})
             return result
-
-        if len(admins) == 0:
-            result.update(
-                {
-                    "code": 404,
-                    "success": False,
-                    "message": "No admins found",
-                    "error": "",
-                }
-            )
-            return result
-
-        result.update(
-            {
-                "code": 200,
-                "success": True,
-                "message": "Admins retrieved",
-                "data": {"admins": admins}
-            }
-        )
+        result.update({"code": 404, "success": False, "message": "No admins found", "error": ""} if len(admins) == 0 else {"code": 200, "success": True, "message": "Admins retrieved", "data": {"admins": admins}})
         return result
 
 admin_user_auth_service = AdminUserAuthService()

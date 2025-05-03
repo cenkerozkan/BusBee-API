@@ -52,22 +52,9 @@ class AdminDriverManagementService:
             )
             is_saved = asyncio.run(self._driver_user_repository.insert_one(new_driver_user.model_dump()))
             if not is_saved:
-                result.update(
-                    {
-                        "code": 500,
-                        "success": False,
-                        "message": "Failed to add driver user",
-                        "error": ""
-                    }
-                )
-            result.update(
-                {
-                    "code": 200,
-                    "success": True,
-                    "message": "Driver user added",
-                    "data": new_driver_user.model_dump()
-                }
-            )
+                result.update({"code": 500, "success": False, "message": "Failed to add driver user", "error": ""})
+
+            result.update({"code": 200, "success": True, "message": "Driver user added", "data": new_driver_user.model_dump()})
         return result
 
     def delete_driver(
@@ -202,11 +189,7 @@ class AdminDriverManagementService:
         # Get driver
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if not driver:
-            result.update({
-                "code": 404,
-                "success": False,
-                "message": "Driver not found"
-            })
+            result.update({"code": 404, "success": False, "message": "Driver not found"})
             return result
 
         # Check if driver has a vehicle

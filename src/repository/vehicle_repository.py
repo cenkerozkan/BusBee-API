@@ -1,4 +1,3 @@
-# src/repository/vehicle_repository.py
 import uuid
 from ..common.base.repository_base_class import RepositoryBaseClass
 from ..common.util.logger import get_logger
@@ -60,10 +59,7 @@ class VehicleRepository(RepositoryBaseClass):
         try:
             is_unique = await self._is_unique(document["plate_number"])
             if not is_unique:
-                result.update({
-                    "success": False,
-                    "message": "Vehicle with this plate number already exists"
-                })
+                result.update({"success": False, "message": "Vehicle with this plate number already exists"})
                 return result
 
             await self._collection.insert_one(document)
@@ -89,9 +85,7 @@ class VehicleRepository(RepositoryBaseClass):
         self._logger.info(f"Getting vehicle for uuid: {vehicle_uuid}")
         try:
             vehicle = await self._collection.find_one({"uuid": vehicle_uuid})
-            if vehicle:
-                return VehicleModel(**vehicle)
-            return None
+            return VehicleModel(**vehicle) if vehicle else None
         except Exception as e:
             self._logger.error(f"Failed to get vehicle: {e}")
             return None
@@ -104,10 +98,7 @@ class VehicleRepository(RepositoryBaseClass):
         try:
             exists = await self._is_exist(vehicle_uuid=document.uuid)
             if not exists:
-                result.update({
-                    "success": False,
-                    "message": "Vehicle does not exist"
-                })
+                result.update({"success": False, "message": "Vehicle does not exist"})
                 return result
 
             # Check if the updated plate number conflicts with another vehicle
@@ -137,17 +128,11 @@ class VehicleRepository(RepositoryBaseClass):
         try:
             exists = await self._is_exist(vehicle_uuid=vehicle_uuid)
             if not exists:
-                result.update({
-                    "success": False,
-                    "message": "Vehicle not found"
-                })
+                result.update({"success": False, "message": "Vehicle not found"})
                 return result
 
             delete_result = await self._collection.delete_one({"uuid": vehicle_uuid})
-            if delete_result.deleted_count > 0:
-                result.update({"success": True, "message": "Vehicle deleted successfully"})
-            else:
-                result.update({"success": False, "message": "Vehicle not found"})
+            result.update({"success": True, "message": "Vehicle deleted successfully"} if delete_result.deleted_count > 0 else {"success": False, "message": "Vehicle not found"})
         except Exception as e:
             result.update({"success": False, "message": "Failed to delete vehicle", "error": str(e)})
         return result
@@ -160,17 +145,11 @@ class VehicleRepository(RepositoryBaseClass):
         try:
             exists = await self._is_exist(plate_number=plate_number)
             if not exists:
-                result.update({
-                    "success": False,
-                    "message": "Vehicle not found"
-                })
+                result.update({"success": False, "message": "Vehicle not found"})
                 return result
 
             delete_result = await self._collection.delete_one({"plate_number": plate_number})
-            if delete_result.deleted_count > 0:
-                result.update({"success": True, "message": "Vehicle deleted successfully"})
-            else:
-                result.update({"success": False, "message": "Vehicle not found"})
+            result.update({"success": True, "message": "Vehicle deleted successfully"} if delete_result.deleted_count > 0 else {"success": False, "message": "Vehicle not found"})
         except Exception as e:
             result.update({"success": False, "message": "Failed to delete vehicle", "error": str(e)})
         return result
