@@ -30,6 +30,7 @@ class DriverService:
             self,
             driver_uid: str
     ) -> dict:
+        self._logger.info(f"Get driver vehicle {driver_uid}")
         result: dict = {
             "code": 0,
             "success": False,
@@ -39,16 +40,19 @@ class DriverService:
         }
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if not driver:
+            self._logger.info(f"Driver {driver_uid} not found")
             result.update({"code": 404, "success": False, "message": "Driver not found"})
             return result
 
         if not driver.vehicle:
+            self._logger.info(f"Driver {driver_uid} does not have a vehicle assigned")
             result.update({"code": 404, "success": False, "message": "Driver is not assigned to a vehicle"})
             return result
 
         vehicle = await self._vehicle_repository.get_all()
         vehicle = next((v for v in vehicle if v.uuid == driver.vehicle.uuid), None)
         if not vehicle:
+            self._logger.info(f"Vehicle {driver.vehicle.uuid} not found")
             result.update({"code": 404, "success": False, "message": "Vehicle not found"})
             return result
 
@@ -59,6 +63,7 @@ class DriverService:
             self,
             driver_uid: str
     ) -> dict:
+        self._logger.info(f"Get driver vehicle route {driver_uid}")
         result: dict = {
             "code": 0,
             "success": False,
@@ -94,8 +99,6 @@ class DriverService:
         })
         return result
 
-    # TODO: For removing vehicle from driver, or removing route from vehicle, implement a utility method
-    #       That checks if is_started flag is true, and if so, return an error message.
     async def start_journey(
             self,
             driver_uid: str,
@@ -115,6 +118,7 @@ class DriverService:
         # Check if driver has an assigned vehicle.
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if driver.vehicle == None:
+            self._logger.info(f"Driver {driver_uid} does not have a vehicle assigned")
             result.update({"code": 404, "success": False, "message": "Bu şoföre atanmış bir araç bulunamadı"})
             return result
 
@@ -122,11 +126,13 @@ class DriverService:
         driver_vehicle = await self._vehicle_repository.get_one_by_uuid(driver.vehicle.uuid)
         vehicle_route = await self._route_repository.get_one_by_uuid(driver_vehicle.route_uuid)
         if not vehicle_route:
+            self._logger.info(f"Vehicle {driver_vehicle.uuid} does not have a route assigned")
             result.update({"code": 404, "success": False, "message": "Bu araca atanmış herhangi bir rota bulunamadı"})
             return result
 
         # Check if that vehicle is already on road.
         if driver_vehicle.is_started:
+            self._logger.info(f"Vehicle {driver_vehicle.uuid} is already on road")
             result.update({"code": 400, "success": False, "message": "Bu araç zaten yolda"})
             return result
 
@@ -145,10 +151,12 @@ class DriverService:
             driver_uid=driver.uid,
             locations=[]
         )
+        self._logger.info(f"New journal {new_journal}")
 
         # Insert the new journal into the DB.
         journal_crud_result: dict = await self._journal_repository.insert_one(new_journal)
         if not journal_crud_result.get("success"):
+            self._logger.error(f"SOMETHING FUCKED UP !!, Error: {journal_crud_result.get('error')}")
             result.update({"code": 500, "success": False, "message": "Failed to create journal", "error": journal_crud_result.get("error")})
             return result
 
@@ -158,7 +166,7 @@ class DriverService:
         is_vehicle_updated: dict = await self._vehicle_repository.update_one(driver_vehicle)
         is_driver_updated: dict = await self._driver_user_repository.update_one(driver)
         if not is_vehicle_updated.get("success") and not is_driver_updated.get("success"):
-            # Delete the journal if vehicle update fails.
+            self._logger.error(f"SOMETHING FUCKED UP!!, Errors Are: {is_vehicle_updated.get('error')}, {is_driver_updated.get('error')}")
             await self._route_repository.delete_one(driver_vehicle.route_uuid)
             result.update({"code": 500, "success": False, "message": "Failed to update vehicle", "error": is_vehicle_updated.get("error")})
 
@@ -171,6 +179,7 @@ class DriverService:
             driver_uid: str,
             journal_uuid: str
     ) -> dict:
+        self._logger.info(f"Stop journal for driver {driver_uid} and journal id {journal_uuid}")
         result: dict = {
             "code": 0,
             "success": False,
@@ -185,18 +194,21 @@ class DriverService:
         # Check if journal exists.
         journal = await self._journal_repository.get_one_by_uuid(journal_uuid)
         if not journal:
+            self._logger.info(f"Journal {journal_uuid} not found")
             result.update({"code": 404, "success": False, "message": "Böyle bir yolculuk kaydı bulunmamaktadır."})
             return result
 
         # Check if driver has an assigned vehicle.
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if driver.vehicle == None:
+            self._logger.info(f"Driver {driver_uid} does not have a vehicle assigned")
             result.update({"code": 404, "success": False, "message": "Bu şoföre atanmış bir araç bulunamadı"})
             return result
 
         # Retrieve drivers_vehicle and update it's status.
         drivers_vehicle = await self._vehicle_repository.get_one_by_uuid(driver.vehicle.uuid)
         if not drivers_vehicle.is_started:
+            self._logger.info(f"Vehicle {drivers_vehicle.uuid} is not on road")
             result.update({"code": 400, "success": False, "message": "Bu araç zaten durdurulmuş"})
             return result
 
@@ -208,6 +220,7 @@ class DriverService:
         is_driver_updated: dict = await self._driver_user_repository.update_one(driver)
         is_journal_updated: dict = await self._journal_repository.update_one(journal)
         if not is_vehicle_updated.get("success") and not is_driver_updated.get("success") and not is_journal_updated.get("success"):
+            self._logger.error(f"SOMETHING FUCKED UP!!, Errors Are: {is_vehicle_updated.get('error')}, {is_driver_updated.get('error')}, {is_journal_updated.get('error')}")
             result.update({"code": 500, "success": False, "message": "Failed to update vehicle", "error": is_vehicle_updated.get("error")})
             return result
 
@@ -226,16 +239,19 @@ class DriverService:
             "error": "",
             "data": {}
         }
+        self._logger.info(f"Updating journal with UUID: {journal_uuid} and location: {location}")
         journal: JournalModel
 
         # Check if journal exists.
         journal = await self._journal_repository.get_one_by_uuid(journal_uuid)
         if not journal:
+            self._logger.info(f"Journal {journal_uuid} not found")
             result.update({"code": 404, "success": False, "message": "Böyle bir yolculuk kaydı bulunmamaktadır."})
             return result
 
         # Check if journal is open.
         if not journal.is_open:
+            self._logger.info(f"Journal {journal_uuid} is not open")
             result.update({"code": 400, "success": False, "message": "Bu yolculuk, artık açık değil."})
             return result
 
@@ -244,6 +260,7 @@ class DriverService:
         journal.updated_at = str(dt.datetime.now().isoformat())
         journal_crud_result: dict = await self._journal_repository.update_one(journal)
         if not journal_crud_result.get("success"):
+            self._logger.error(f"SOMETHING FUCKED UP!!, Error: {journal_crud_result.get('error')}")
             result.update({"code": 500, "success": False, "message": "Yolculuk kaydı güncellenirken bir hata meydana geldi.", "error": journal_crud_result.get("error")})
             return result
 
