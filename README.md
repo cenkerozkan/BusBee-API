@@ -55,6 +55,9 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
 - [Driver Endpoints](#driver-endpoints)
   - [Get Vehicle](#get-vehicle)
   - [Get Vehicle Route](#get-vehicle-route)
+  - [Start Journal](#start-journey)
+  - [Stop Journey](#stop-journey)
+  - [Websocket Location Updates](#websocket-location-updates)
 
 ## Authentication Services
 
@@ -1605,7 +1608,7 @@ Stops the journey for the driver.
 }
 ```
 
-### Websocket Location Updates (By Driver)
+### Websocket Location Updates
 `ws://busops-acb3c422b0e4.herokuapp.com/driver/update_location`
 
 **Authentication**
