@@ -57,7 +57,10 @@ class AdminRouteManagementService:
             vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route.uuid]
             await self._vehicle_repository.update_one(vehicle)
         crud_result = await self._route_repository.delete_one_by_name(route_name)
-        result.update({"code": 200, "success": True, "message": crud_result.get("message")} if crud_result.get("success") else {"code": 404 if crud_result.get("message") == "Route does not exist" else 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
+        if not crud_result.get("success"):
+            result.update({"code": 404 if crud_result.get("message") == "Route does not exist" else 500, "success": False,
+             "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
+        result.update({"code": 200, "success": True, "message": crud_result.get("message")})
         return result
 
     async def update_route(
