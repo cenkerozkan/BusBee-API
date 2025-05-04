@@ -2,8 +2,6 @@ import datetime as dt
 import asyncio
 import uuid
 
-from starlette.routing import Route
-
 from ..repository.route_repository import route_repository
 from ..repository.vehicle_repository import vehicle_repository
 from ..common.util.logger import get_logger
