@@ -248,6 +248,11 @@ class DriverUserService:
             result.update({"code": 404, "success": False, "message": "Böyle bir yolculuk kaydı bulunmamaktadır."})
             return result
 
+        if not journal.is_open:
+            self._logger.info(f"Journal {journal_uuid} is not open")
+            result.update({"code": 400, "success": False, "message": "Bu yolculuk zaten durdurulmuş."})
+            return result
+
         # Check if driver has an assigned vehicle.
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if driver.vehicle == None:
