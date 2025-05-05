@@ -139,15 +139,15 @@ class RouteRepository(RepositoryBaseClass):
     ) -> RouteModel | None:
         result: RouteModel
         self._logger.info(f"Getting route for uuid: {uuid}")
-
         try:
             route = await self._collection.find_one({"uuid": uuid})
-
         except Exception as e:
             self._logger.error(f"Failed to get route for uuid: {e}")
             return None
+        if route:
+            return RouteModel(**route)
 
-        return RouteModel(**route)
+        return None
 
     async def get_one_by_name(
             self,
