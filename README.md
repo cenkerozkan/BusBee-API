@@ -1396,6 +1396,56 @@ Assigns routes to a vehicle.
 
 
 ## Driver Endpoints
+### Get Driver Information
+`GET /api/driver/get_driver_info/{driver_uid}`
+Retrieves information about the driver.
+**Parameters:**
+- `driver_uid`: UID of the driver
+
+**Headers:**
+- `Authorization`: Bearer token (Driver token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with driver data
+```json
+{
+  "success": true,
+  "message": "Driver information retrieved successfully",
+  "data": {
+    "uid": "HLAuyB1sGIVV9LuIw6WikOPqLZ42",
+    "first_name": "Cenker",
+    "last_name": "Özkan",
+    "phone_number": "+905343732399",
+    "role": "DRIVER_USER",
+    "vehicle": {
+      "uuid": "f5488f20-f1b1-4c5b-9c79-70daa1d3c19c",
+      "vehicle_brand": "Mercedes-Benz",
+      "vehicle_model": "Conecto",
+      "vehicle_year": 2022,
+      "plate_number": "34ABC123",
+      "is_started": false,
+      "route_uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d"
+    }
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+- 500: Failed to retrieve driver information
+- 404: Driver not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Driver not found",
+  "data": {},
+  "error": ""
+}
+```
+
 ### Get Vehicle
 `GET /api/driver/get_vehicle/{driver_uid}`
 Retrieves the vehicle assigned to the driver.

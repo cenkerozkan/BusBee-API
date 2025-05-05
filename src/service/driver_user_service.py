@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 # To make it faster.
 _JOURNAL_CACHE: dict = {}
 
-class DriverService:
+class DriverUserService:
     def __init__(self):
         self._logger = logger
         self._driver_user_repository = driver_user_repository
@@ -57,6 +57,28 @@ class DriverService:
             return result
 
         result.update({"code": 200, "success": True, "message": "Vehicle retrieved successfully", "data": vehicle.model_dump()})
+        return result
+
+    async def get_driver_information(
+            self,
+            driver_uid: str
+    ) -> dict:
+        self._logger.info(f"Get driver information {driver_uid}")
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+        driver: DriverUserModel = await self._driver_user_repository.get_one_by_uid(driver_uid)
+        if not driver:
+            result.update({"code": 404, "success": False, "message": "Driver not found"})
+            return result
+
+        result.update({
+            "code": 200, "success": True, "message": "Driver information retrieved successfully", "data": driver.model_dump()
+        })
         return result
 
     async def get_vehicle_route(
@@ -268,4 +290,4 @@ class DriverService:
         return result
 
 
-driver_service = DriverService()
+driver_service = DriverUserService()

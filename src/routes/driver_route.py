@@ -9,7 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.logger import get_logger
-from ..service.driver_service import driver_service
+from ..service.driver_user_service import driver_service
 from ..common.request_model.driver_models import LocationDataModel
 from ..common.db.model.bus_location_model import BusLocationModel
 from ..common.util.jwt_validator import jwt_validator  # Import the validator
@@ -104,6 +104,28 @@ async def start_journey(
             error=result.get("error")
         ).model_dump()
     )
+
+@driver_router.get("/get_driver_information/{driver_uid}", tags=["Driver"])
+async def get_driver_information(
+        driver_uid: str,
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
+) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    logger.info(f"Get driver information request for driver UID: {driver_uid}")
+    result = await driver_service.get_driver_information(driver_uid)
+    return JSONResponse(
+        status_code=result.get("code"),
+        content=ResponseModel(
+            success=result.get("success"),
+            message=result.get("message"),
+            data=result.get("data"),
+            error=result.get("error")
+        ).model_dump()
+    )
+
 
 @driver_router.websocket("/ws/update_location")
 async def update_location(websocket: WebSocket) -> None:
