@@ -1621,11 +1621,12 @@ Starts the journey for the driver.
 ````
 
 ### Stop Journey
-`POST /api/driver/stop_journey/{driver_uid}`
+`POST /api/driver/stop_journey/{driver_uid}/{journal_uuid}`
 Stops the journey for the driver.
 
 **Parameters:**
 - `driver_uid`: UID of the driver
+- `journal_uuid`: UUID of the journal
 
 **Headers:**
 - `Authorization`: Bearer token (Driver token required)

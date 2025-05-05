@@ -84,7 +84,7 @@ async def start_journey(
     )
 
 @driver_router.post("/stop_journey/{driver_uid}/{journal_uuid}", tags=["Driver"])
-async def start_journey(
+async def stop_journey(
         driver_uid: str,
         journal_uuid: str,
         is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
