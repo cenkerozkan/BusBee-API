@@ -159,6 +159,12 @@ class DriverUserService:
         vehicle_route: RouteModel
         new_journal: JournalModel
 
+        # Check if driver has already
+        journal: JournalModel = await self._journal_repository.get_active_one_by_driver_uid(driver_uid)
+        if journal:
+            result.update({"code": 404, "success": False, "message": "Zaten aktif bir yolculuk kaydınız var."})
+            return result
+
         # Check if driver has an assigned vehicle.
         driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if driver.vehicle == None:
