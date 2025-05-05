@@ -1740,7 +1740,7 @@ Stops the journey for the driver.
 ```
 
 ### Websocket Location Updates
-`ws://busops-acb3c422b0e4.herokuapp.com/driver/update_location`
+`ws://busops-acb3c422b0e4.herokuapp.com/driver/ws/update_location`
 
 **Authentication**
 Include the API key in the request headers as this:
