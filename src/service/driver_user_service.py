@@ -81,6 +81,28 @@ class DriverUserService:
         })
         return result
 
+    async def get_active_journal_by_uid(
+            self,
+            driver_uid: str
+    ) -> dict:
+        self._logger.info(f"Get active journal for driver {driver_uid}")
+        result: dict = {
+            "code": 0,
+            "success": False,
+            "message": "",
+            "error": "",
+            "data": {}
+        }
+        journal: JournalModel = await self._journal_repository.get_active_one_by_driver_uid(driver_uid)
+        if not journal:
+            result.update({"code": 404, "success": False, "message": "No active journal found"})
+            return result
+
+        result.update({
+            "code": 200, "success": True, "message": "Active journal retrieved successfully", "data": journal.model_dump()
+        })
+        return result
+
     async def get_vehicle_route(
             self,
             driver_uid: str

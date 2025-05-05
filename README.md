@@ -1396,8 +1396,88 @@ Assigns routes to a vehicle.
 
 
 ## Driver Endpoints
+### Get Active Journal
+`GET /api/driver/active_journey/{driver_uid}`
+Retrieves the active journal for the driver.
+**Parameters:**
+- `driver_uid`: UID of the driver
+
+**Headers:**
+- `Authorization`: Bearer token (Driver token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with journal data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Active journal retrieved successfully",
+  "data": {
+    "journal_date": "05-05-2025",
+    "driver_name": "Cenker",
+    "driver_last_name": "Özkan",
+    "created_at": "2025-05-05T15:53:38.991755",
+    "updated_at": "2025-05-05T15:53:38.991761",
+    "journal_uuid": "4f6a5a3b-fa54-4db3-be50-7bf736bcc535",
+    "journal_route": {
+      "uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d",
+      "route_name": "Campus Loop Route",
+      "created_at": "2025-04-30T15:46:48.866020",
+      "updated_at": "2025-04-30T15:46:48.866025",
+      "start_time": "09:30",
+      "stops": [
+        {
+          "lat": 39.970539,
+          "lon": 32.83588
+        },
+        {
+          "lat": 39.971234,
+          "lon": 32.836012
+        },
+        {
+          "lat": 39.969876,
+          "lon": 32.834567
+        },
+        {
+          "lat": 39.968765,
+          "lon": 32.83389
+        }
+      ]
+    },
+    "journal_vehicle": {
+      "uuid": "f5488f20-f1b1-4c5b-9c79-70daa1d3c19c",
+      "vehicle_brand": "Mercedes-Benz",
+      "vehicle_model": "Conecto",
+      "vehicle_year": 2022,
+      "plate_number": "34ABC123",
+      "is_started": false,
+      "route_uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d"
+    },
+    "is_open": true,
+    "driver_uid": "HLAuyB1sGIVV9LuIw6WikOPqLZ42",
+    "locations": []
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+- 400: No active journal found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "No active journal found",
+  "data": {},
+  "error": ""
+}
+```
+
 ### Get Driver Information
-`GET /api/driver/get_driver_info/{driver_uid}`
+`GET /api/driver/get_driver_information/{driver_uid}`
 Retrieves information about the driver.
 **Parameters:**
 - `driver_uid`: UID of the driver

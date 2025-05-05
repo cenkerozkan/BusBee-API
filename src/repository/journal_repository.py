@@ -147,16 +147,16 @@ class JournalRepository(RepositoryBaseClass):
             result.update({"success": False, "message": "Failed to add location", "error": str(e)})
         return result
 
-    async def get_one_by_driver_uuid(
+    async def get_active_one_by_driver_uid(
             self,
             driver_uid: str
     ) -> JournalModel | None:
-        self._logger.info(f"Getting journal for driver_uid: {driver_uid}")
+        self._logger.info(f"Getting active journal for driver_uid: {driver_uid}")
         try:
-            journal = await self._collection.find_one({"driver_uid": driver_uid})
+            journal = await self._collection.find_one({"driver_uid": driver_uid, "is_open": True})
             return JournalModel(**journal) if journal else None
         except Exception as e:
-            self._logger.error(f"Failed to get journal: {e}")
+            self._logger.error(f"Failed to get active journal: {e}")
             return None
 
 

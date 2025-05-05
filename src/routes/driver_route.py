@@ -126,6 +126,26 @@ async def get_driver_information(
         ).model_dump()
     )
 
+@driver_router.get("/active_journey/{driver_uid}", tags=["Driver"])
+async def get_active_journey(
+        driver_uid: str,
+        is_jwt_valid: bool = Depends(jwt_validator),  # Apply JWT dependency
+) -> JSONResponse:
+    if not is_jwt_valid:
+        return JSONResponse(
+            status_code=401,
+            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    logger.info(f"Get active journey request for driver UID: {driver_uid}")
+    result = await driver_service.get_active_journal_by_uid(driver_uid)
+    return JSONResponse(
+        status_code=result.get("code"),
+        content=ResponseModel(
+            success=result.get("success"),
+            message=result.get("message"),
+            data=result.get("data"),
+            error=result.get("error")
+        ).model_dump()
+    )
 
 @driver_router.websocket("/ws/update_location")
 async def update_location(websocket: WebSocket) -> None:

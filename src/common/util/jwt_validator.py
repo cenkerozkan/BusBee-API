@@ -9,7 +9,6 @@ logger = get_logger(__name__)
 
 async def jwt_validator(credentials: HTTPAuthorizationCredentials = Depends(security)) -> bool:
     jwt = credentials.credentials
-    logger.info(f"Validate JWT: {jwt}")
     try:
         # Verify id token
         is_valid = await run_in_threadpool(
