@@ -32,7 +32,7 @@ class JournalRepository(RepositoryBaseClass):
             # Create indexes
             await self._collection.create_index("journal_uuid", unique=True)
             self._logger.info("Created index on journal_uuid")
-
+            await MongoDBConnector().ping_db()
             self._logger.info("Database setup completed successfully")
         except Exception as e:
             self._logger.error(f"Database setup error: {e}")
@@ -158,6 +158,28 @@ class JournalRepository(RepositoryBaseClass):
         except Exception as e:
             self._logger.error(f"Failed to get active journal: {e}")
             return None
+
+    async def is_vehicle_active(
+            self,
+            vehicle_uuid: str = None,
+            driver_uid: str = None,
+            plate_number: str = None
+    ) -> bool:
+        self._logger.info(f"Checking vehicle state for vehicle_uuid: {vehicle_uuid}")
+        try:
+            if driver_uid is not None:
+                journal = await self._collection.find_one({"driver_uid": driver_uid, "is_open": True})
+            elif vehicle_uuid is not None:
+                journal = await self._collection.find_one({"journal_vehicle.uuid": vehicle_uuid, "is_open": True})
+            elif plate_number is not None:
+                journal = await self._collection.find_one({"journal_vehicle.plate_number": plate_number,
+                                                           "is_open": True})
+            else:
+                raise ValueError("Either vehicle_uuid or driver_uid must be provided, not both.")
+            return bool(journal)
+        except Exception as e:
+            self._logger.error(f"Failed to check vehicle state: {e}")
+            return False
 
 
 journal_repository = JournalRepository()

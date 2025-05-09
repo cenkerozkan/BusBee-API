@@ -49,14 +49,14 @@ class AdminVehicleManagementService:
 
         routes: list = await self._route_repository.get_all()
         route_map: dict = {route.uuid: route for route in routes}
-
-        enriched_vehicles = []
+        enriched_vehicles: list = []
         for vehicle in vehicles:
             vehicle_data = vehicle.model_dump()
-            if vehicle.route_uuid and vehicle.route_uuid in route_map:
-                vehicle_data["route"] = route_map[vehicle.route_uuid].model_dump()
+            if vehicle.route_uuid in route_map:
+                vehicle_data.update({"route": route_map[vehicle.route_uuid].model_dump()})
+                vehicle_data.pop("route_uuid")
             else:
-                vehicle_data["route"] = None
+                vehicle_data.update({"route": None})
             enriched_vehicles.append(vehicle_data)
 
         result.update({"code": 200, "success": True, "message": "Vehicles retrieved successfully", "data": {"vehicles": enriched_vehicles}})

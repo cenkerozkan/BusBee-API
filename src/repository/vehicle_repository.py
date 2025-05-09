@@ -12,9 +12,26 @@ class VehicleRepository(RepositoryBaseClass):
 
     async def ensure_db_setup(self) -> None:
         try:
+            # List all databases
+            db_list = await self._db.client.list_database_names()
+
+            # Check if our database exists
+            if "bus_ops" not in db_list:
+                self._logger.warn("Creating new database")
+                await self._db.command({"create": "end_users"})
+                self._logger.info("Created bus_ops database")
+
+            # Check if collection exists
+            collections = await self._db.list_collection_names()
+            if "end_users" not in collections:
+                await self._db.create_collection("end_users")
+                self._logger.info("Created end_users collection")
+
+            # Create indexes
             await self._collection.create_index("uuid", unique=True)
             await self._collection.create_index("plate_number", unique=True)
             self._logger.info("Vehicle indexes created successfully")
+            await MongoDBConnector().ping_db()
         except Exception as e:
             self._logger.error(f"Failed to create indexes: {e}")
 

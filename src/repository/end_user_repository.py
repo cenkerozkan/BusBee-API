@@ -33,7 +33,7 @@ class EndUserRepository(RepositoryBaseClass):
             await self._collection.create_index("uid", unique=True)
             await self._collection.create_index("email", unique=True)
             self._logger.info("Created indexes on uid and email")
-
+            await MongoDBConnector().ping_db()
             self._logger.info("Database setup completed successfully")
         except Exception as e:
             self._logger.error(f"Database setup error: {e}")

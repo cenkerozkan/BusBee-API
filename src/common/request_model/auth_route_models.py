@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 class LogoutRequest(BaseModel):
     user_uid: str
@@ -23,9 +23,16 @@ class AddAdminUserModel(BaseModel):
     first_name: str
     last_name: str
 
+class UpdateAdminUserModel(BaseModel):
+    uid: str
+    first_name: str
+    last_name: str
+    email: str
+
 class RemoveAdminUserModel(BaseModel):
     user_uid: str
 
+# For end users.
 class CreateAccountRequest(BaseModel):
     uid: str
     email: str

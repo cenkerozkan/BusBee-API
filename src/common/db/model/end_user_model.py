@@ -9,3 +9,4 @@ class EndUserModel(BaseModel):
     email: str
     first_name: str = ""
     last_name: str = ""
+    saved_routes: list[str] = []

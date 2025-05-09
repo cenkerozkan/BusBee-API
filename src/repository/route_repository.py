@@ -45,7 +45,7 @@ class RouteRepository(RepositoryBaseClass):
             # Create indexes
             await self._collection.create_index("uuid", unique=True)
             await self._collection.create_index("route_name", unique=True)
-
+            await MongoDBConnector().ping_db()
             self._logger.info("Created indexes on uid and email")
 
             self._logger.info("Database setup completed successfully")

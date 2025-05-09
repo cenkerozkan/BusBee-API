@@ -83,13 +83,7 @@ class AdminDriverManagementService:
             new_phone_number: str
     ) -> dict:
         self._logger.info(f"Updating driver phone number: {new_phone_number} for driver: {driver_uid}")
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         firebase_response: bool = False
         is_updated: bool = False
 
@@ -116,14 +110,8 @@ class AdminDriverManagementService:
     async def get_all_drivers(
             self
     ) -> dict:
-        result: dict = {
-            "code": 200,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
-        drivers: list
+        result: dict = {"code": 200, "success": False, "message": "", "error": "", "data": {}}
+        drivers: list[DriverUserModel]
 
         try:
             drivers = await self._driver_user_repository.get_all()
@@ -137,26 +125,35 @@ class AdminDriverManagementService:
         if len(drivers) == 0:
             result.update({"code": 404, "success": True, "message": "No drivers found", "data": {}})
         else:
-            result.update({"code": 200, "success": True, "message": "Drivers retrieved", "data": {"drivers": [driver.model_dump() for driver in drivers]}})
+            result.update({"code": 200, "success": True, "message": "Drivers retrieved",
+                           "data": {"drivers": [driver.model_dump() for driver in drivers]}})
         return result
 
-    async def assign_vehicle_to_driver(self, driver_uid: str, vehicle_uuid: str) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+    async def assign_vehicle_to_driver(
+            self,
+            driver_uid: str,
+            vehicle_uuid: str) -> dict:
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
+
+        # I really loved this way of checking if lists.
+        drivers: list[DriverUserModel] = await self._driver_user_repository.get_all()
+        driver_with_vehicle: DriverUserModel = next((driver for driver in drivers if driver.vehicle
+                                                     and driver.vehicle.uuid == vehicle_uuid), None)
+        if driver_with_vehicle:
+            result.update({"code": 409, "success": False,
+                           "message": f"Bu araç zaten {driver_with_vehicle.first_name} {driver_with_vehicle.last_name} "
+                                      f"tarafından kullanılıyor, aracı başka bir şoföre atamadan önce bir önceki"
+                                      f"atanan şoförden kaldırmalısınız.", "data": {}})
+            return result
 
         # Fetch the driver
-        driver = await self._driver_user_repository.get_one_by_uid(driver_uid)
+        driver: DriverUserModel = await self._driver_user_repository.get_one_by_uid(driver_uid)
         if not driver:
             result.update({"code": 404, "success": False, "message": "Driver not found"})
             return result
 
         # Fetch the vehicle
-        vehicles = await self._vehicle_repository.get_all()
+        vehicles: list[VehicleModel] = await self._vehicle_repository.get_all()
         vehicle = next((v for v in vehicles if v.uuid == vehicle_uuid), None)
         if not vehicle:
             result.update({"code": 404, "success": False, "message": "Vehicle not found"})
@@ -176,13 +173,7 @@ class AdminDriverManagementService:
             self,
             driver_uid: str
     ) -> dict:
-        result: dict = {
-            "code": 0,
-            "success": False,
-            "message": "",
-            "error": "",
-            "data": {}
-        }
+        result: dict = {"code": 0, "success": False," message": "", "error": "", "data": {}}
 
         self._logger.info(f"Removing vehicle from driver: {driver_uid}")
 

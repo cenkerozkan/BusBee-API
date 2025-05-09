@@ -33,7 +33,7 @@ class DriverUserRepository(RepositoryBaseClass):
             # Create indexes
             await self._collection.create_index("uid", unique=True)
             self._logger.info("Created index on uid")
-
+            await MongoDBConnector().ping_db()
             self._logger.info("Database setup completed successfully")
         except Exception as e:
             self._logger.error(f"Database setup error: {e}")

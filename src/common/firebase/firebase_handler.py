@@ -191,4 +191,18 @@ class FirebaseHandler:
         auth.update_user(user_uid, phone_number=new_phone_number, app=self._app)
         return True
 
+    def update_admin_user(
+            self,
+            user_uid: str,
+            email: str,
+    ) -> bool:
+        result: bool = False
+        self._logger.info(f"Updating user with email: {email}")
+        try:
+            auth.update_user(uid=user_uid, email=email, app=self._app)
+            result = True
+        except Exception as e:
+            self._logger.error(f"Failed to update user with email: {email}, error: {e}")
+        return result
+
 firebase_handler = FirebaseHandler()

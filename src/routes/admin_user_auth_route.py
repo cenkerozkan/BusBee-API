@@ -153,3 +153,32 @@ async def get_all_admins(is_key_valid: str = Depends(validate_admin_api_key)) ->
     return JSONResponse(
         status_code=403,
         content=ResponseModel(success=False,message="Unauthorized",data={},error="").model_dump())
+
+@admin_user_auth_router.patch("/update_admin_user", tags=["Admin User Auth"])
+async def update_admin_user(
+        update_admin_user: UpdateAdminUserModel,
+        is_key_valid: str = Depends(validate_admin_api_key)
+) -> JSONResponse:
+    logger.info(f"Update admin user request for {update_admin_user.uid}")
+    if is_key_valid:
+        email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
+        if not re.match(email_pattern, update_admin_user.email):
+            return JSONResponse(
+                status_code=400,
+                content=ResponseModel(success=False,message="Hatalı Mail Formatı",data={},error="").model_dump()
+            )
+
+        response: dict = await admin_user_auth_service.update_admin_user(**update_admin_user.model_dump())
+        return JSONResponse(
+            status_code=response.get("code"),
+            content=ResponseModel(
+                success=response.get("success"),
+                message=response.get("message"),
+                data=response.get("data"),
+                error=response.get("error")
+            ).model_dump()
+        )
+
+    return JSONResponse(
+        status_code=403,
+        content=ResponseModel(success=False,message="Unauthorized",data={},error="").model_dump())

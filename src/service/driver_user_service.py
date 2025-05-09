@@ -180,12 +180,6 @@ class DriverUserService:
             result.update({"code": 404, "success": False, "message": "Bu araca atanmış herhangi bir rota bulunamadı"})
             return result
 
-        # Check if that vehicle is already on road.
-        if driver_vehicle.is_started:
-            self._logger.info(f"Vehicle {driver_vehicle.uuid} is already on road")
-            result.update({"code": 400, "success": False, "message": "Bu araç zaten yolda"})
-            return result
-
 
         # Create a new journal object and insert it.
         new_journal = JournalModel(
@@ -206,22 +200,14 @@ class DriverUserService:
         # Insert the new journal into the DB.
         journal_crud_result: dict = await self._journal_repository.insert_one(new_journal)
         if not journal_crud_result.get("success"):
-            self._logger.error(f"SOMETHING FUCKED UP !!, Error: {journal_crud_result.get('error')}")
-            result.update({"code": 500, "success": False, "message": "Failed to create journal", "error": journal_crud_result.get("error")})
+            self._logger.error(f"SOMETHING UP !!, Error: {journal_crud_result.get('error')}")
+            result.update({"code": 500, "success": False, "message": "Failed to create journal",
+                           "error": journal_crud_result.get("error")})
             return result
 
-        # Update is_started flag to true.
-        driver_vehicle.is_started = True # This is the
-        driver.vehicle.is_started = True
-        is_vehicle_updated: dict = await self._vehicle_repository.update_one(driver_vehicle)
-        is_driver_updated: dict = await self._driver_user_repository.update_one(driver)
-        if not is_vehicle_updated.get("success") and not is_driver_updated.get("success"):
-            self._logger.error(f"SOMETHING FUCKED UP!!, Errors Are: {is_vehicle_updated.get('error')}, {is_driver_updated.get('error')}")
-            await self._route_repository.delete_one(driver_vehicle.route_uuid)
-            result.update({"code": 500, "success": False, "message": "Failed to update vehicle", "error": is_vehicle_updated.get("error")})
-
         # Success
-        result.update({"code": 200, "success": True, "message": "Journey started successfully", "data": {"journal": new_journal.model_dump()}})
+        result.update({"code": 200, "success": True, "message": "Journey started successfully",
+                       "data": {"journal": new_journal.model_dump()}})
         return result
 
     async def stop_journey(
@@ -260,23 +246,12 @@ class DriverUserService:
             result.update({"code": 404, "success": False, "message": "Bu şoföre atanmış bir araç bulunamadı"})
             return result
 
-        # Retrieve drivers_vehicle and update it's status.
-        drivers_vehicle = await self._vehicle_repository.get_one_by_uuid(driver.vehicle.uuid)
-        if not drivers_vehicle.is_started:
-            self._logger.info(f"Vehicle {drivers_vehicle.uuid} is not on road")
-            result.update({"code": 400, "success": False, "message": "Bu araç zaten durdurulmuş"})
-            return result
-
-
-        drivers_vehicle.is_started = False
-        driver.vehicle.is_started = False
         journal.is_open = False
-        is_vehicle_updated: dict = await self._vehicle_repository.update_one(drivers_vehicle)
-        is_driver_updated: dict = await self._driver_user_repository.update_one(driver)
         is_journal_updated: dict = await self._journal_repository.update_one(journal)
-        if not is_vehicle_updated.get("success") and not is_driver_updated.get("success") and not is_journal_updated.get("success"):
-            self._logger.error(f"SOMETHING FUCKED UP!!, Errors Are: {is_vehicle_updated.get('error')}, {is_driver_updated.get('error')}, {is_journal_updated.get('error')}")
-            result.update({"code": 500, "success": False, "message": "Failed to update vehicle", "error": is_vehicle_updated.get("error")})
+        if not is_journal_updated.get("success"):
+            self._logger.error(f"SOMETHING FUCKED UP !!, Error: {is_journal_updated.get('error')}")
+            result.update({"code": 500, "success": False, "message": "Failed to update journal",
+                           "error": is_journal_updated.get("error")})
             return result
 
         result.update({"code": 200, "success": True, "message": "Journey stopped successfully"})

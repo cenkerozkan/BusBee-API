@@ -48,6 +48,7 @@ class AdminUserRepository(RepositoryBaseClass):
             await self._collection.create_index("uid", unique=True)
             await self._collection.create_index("email", unique=True)
             self._logger.info("Created indexes on uid and email")
+            await MongoDBConnector().ping_db()
 
             self._logger.info("Database setup completed successfully")
         except Exception as e:
@@ -87,7 +88,7 @@ class AdminUserRepository(RepositoryBaseClass):
 
         return result
 
-    async def get_one(
+    async def get_one_by_email(
             self,
             email: str
     ) -> AdminUserModel | None:
@@ -100,12 +101,31 @@ class AdminUserRepository(RepositoryBaseClass):
             self._logger.error(f"Failed to get document: {e}")
             return None
 
+    async def get_one_by_uid(
+            self,
+            uid: str
+    ) -> AdminUserModel | None:
+        self._logger.info(f"Getting user for uid: {uid}")
+        try:
+            user = await self._collection.find_one({"uid": uid})
+            return AdminUserModel(**user)
+
+        except Exception as e:
+            self._logger.error(f"Failed to get document: {e}")
+            return None
 
     async def update_one(
             self,
             document
-    ):
-        await super().update_one(document)
+    ) -> bool:
+        self._logger.info(f"Updating document: {document}")
+        try:
+            await self._collection.update_one({"uid": document["uid"]}, {"$set": document})
+        except Exception as e:
+            self._logger.error(f"Failed to update document: {e}")
+            return False
+
+        return True
 
     async def update_many(
             self,

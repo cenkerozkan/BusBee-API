@@ -535,6 +535,60 @@ Retrieves all registered admin users.
 }
 ```
 
+## Update Admin User
+`PATCH /api/auth/admin_user/update_admin_user`
+
+Updates an existing admin user.
+**Request Body:**
+```json
+{
+  "uid": "string",
+  "first_name": "string",
+  "last_name": "string",
+  "email": "string",
+}
+```
+
+**Headers:**
+- `ADMIN-API-KEY`: Admin API key
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with updated admin user data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Admin bilgileri güncellendi",
+  "data": {
+    "uid": "F4YLPnSWIWZ2MTMTLorqPPX08Fj2",
+    "created_at": "2025-04-30T15:35:36.735073",
+    "last_active": "2025-05-09T21:31:26.229354",
+    "first_name": "Cenker",
+    "last_name": "Özkan",
+    "role": "ADMIN_USER",
+    "email": "cenkerozkan99@gmail.com"
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+- 403: Unauthorized
+- 500: Admin bilgileri güncellenemedi
+- 400: Hatalı Mail Formatı
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Hatalı Mail Formatı",
+  "data": {},
+  "error": ""
+}
+```
+
 ## Admin Driver Management Endpoints
 
 ### Get All Drivers
@@ -749,7 +803,6 @@ Assigns a vehicle to a driver.
         "vehicle_model": "Sprinter",
         "vehicle_year": 2024,
         "plate_number": "06 BTU 495",
-        "is_started": false,
         "route_uuid": "string"
       }
     }
@@ -1114,7 +1167,6 @@ Creates a new vehicle.
       "vehicle_model": "Conecto",
       "vehicle_year": 2022,
       "plate_number": "34ABC123",
-      "is_started": false,
       "route_uuid": null
     }
   },
@@ -1154,8 +1206,6 @@ Retrieves all vehicles.
         "vehicle_model": "Conecto",
         "vehicle_year": 2022,
         "plate_number": "34ABC123",
-        "is_started": false,
-        "route_uuid": null,
         "route": null
       },
       {
@@ -1164,8 +1214,6 @@ Retrieves all vehicles.
         "vehicle_model": "Conecto",
         "vehicle_year": 2023,
         "plate_number": "34ABC122",
-        "is_started": false,
-        "route_uuid": null,
         "route": null
       }
     ]
@@ -1452,7 +1500,6 @@ Retrieves the active journal for the driver.
       "vehicle_model": "Conecto",
       "vehicle_year": 2022,
       "plate_number": "34ABC123",
-      "is_started": false,
       "route_uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d"
     },
     "is_open": true,
@@ -1504,7 +1551,6 @@ Retrieves information about the driver.
       "vehicle_model": "Conecto",
       "vehicle_year": 2022,
       "plate_number": "34ABC123",
-      "is_started": false,
       "route_uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d"
     }
   },
@@ -1689,7 +1735,6 @@ Starts the journey for the driver.
         "vehicle_model": "Conecto",
         "vehicle_year": 2022,
         "plate_number": "34ABC123",
-        "is_started": false,
         "route_uuid": "5daa2025-3383-47c9-a7c2-da641067fe4d"
       },
       "driver_uid": "HLAuyB1sGIVV9LuIw6WikOPqLZ42",

@@ -1,10 +1,6 @@
 import datetime as dt
 import asyncio
-from operator import is_not
 
-from starlette.responses import JSONResponse
-
-from ..common.meta.singleton_meta import SingletonMeta
 from ..common.firebase.firebase_handler import firebase_handler
 from ..common.db.model.admin_user_model import AdminUserModel
 from ..repository.admin_user_repository import admin_user_repository
@@ -37,7 +33,7 @@ class AdminUserAuthService:
             result.update({"code": response.get("error").get("code"), "success": False, "message": get_error_message(response.get("error").get("errors")[0].get("message"))})
         else:
             firebase_user_info: dict = self._firebase_handler.get_user_info(email)
-            user_info: AdminUserModel = asyncio.run(self._admin_user_repository.get_one(email))
+            user_info: AdminUserModel = asyncio.run(self._admin_user_repository.get_one_by_email(email))
             result.update({"code": 200, "success": True, "message": "Login successful", "refresh_token": response.get("refreshToken"), "id_token": response.get("idToken"), "data": user_info.model_dump()})
         return result
 
@@ -112,6 +108,34 @@ class AdminUserAuthService:
             result.update({"code": 500, "success": False, "message": str(e)})
             return result
         result.update({"code": 404, "success": False, "message": "No admins found", "error": ""} if len(admins) == 0 else {"code": 200, "success": True, "message": "Admins retrieved", "data": {"admins": admins}})
+        return result
+
+    async def update_admin_user(
+            self,
+            uid: str,
+            first_name: str,
+            last_name: str,
+            email: str,
+    ) -> dict:
+        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
+        admin: AdminUserModel = await self._admin_user_repository.get_one_by_uid(uid)
+        if email != admin.email:
+            # First call firebase handler to update the user
+            is_firabase_updated: bool = self._firebase_handler.update_admin_user(email=email, user_uid=uid)
+            if not is_firabase_updated:
+                result.update({"code": 500, "success": False, "message": "Admin bilgileri güncellenemedi", "error": ""})
+                return result
+
+        admin.first_name = first_name
+        admin.last_name = last_name
+        admin.email = email
+        admin.last_active = dt.datetime.now().isoformat()
+        is_updated: bool = await self._admin_user_repository.update_one(admin.model_dump())
+        if not is_updated:
+            result.update({"code": 500, "success": False, "message": "Admin bilgileri kayıt edilirken bir hata oluştu",
+                           "error": ""})
+            return result
+        result.update({"code": 200, "success": True, "message": "Admin bilgileri güncellendi", "data": admin.model_dump()})
         return result
 
 admin_user_auth_service = AdminUserAuthService()

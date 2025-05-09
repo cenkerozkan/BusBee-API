@@ -7,6 +7,7 @@ from ..common.request_model.admin_vehicle_management_models import *
 from ..common.response_model.response_model import ResponseModel
 from ..common.util.logger import get_logger
 from ..common.util.jwt_validator import jwt_validator
+from ..common.util.vehicle_state_validator import validate_vehicle_state
 from ..service.admin_vehicle_management_service import admin_vehicle_management_service
 
 logger = get_logger(__name__)
@@ -57,12 +58,18 @@ async def get_all_vehicles(
 @admin_vehicle_management_router.patch("/update", tags=["Admin Vehicle Management"])
 async def update_vehicle(
         vehicle_data: UpdateVehicleModel,
-        is_jwt_valid: bool = Depends(jwt_validator),
+        is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
     if not is_jwt_valid:
         return JSONResponse(
             status_code=401,
             content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    is_vehicle_on_route: bool = await validate_vehicle_state(vehicle_uuid=vehicle_data.uuid)
+    if is_vehicle_on_route:
+        return JSONResponse(
+            status_code=409,
+            content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
+                                  data={}, error="").model_dump())
     logger.info(f"Update vehicle request for uuid: {vehicle_data.uuid}")
     result = await admin_vehicle_management_service.update_vehicle(vehicle_data)
     return JSONResponse(
@@ -84,6 +91,12 @@ async def delete_vehicle(
         return JSONResponse(
             status_code=401,
             content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    is_vehicle_on_route: bool = await validate_vehicle_state(vehicle_uuid=vehicle_uuid)
+    if is_vehicle_on_route:
+        return JSONResponse(
+            status_code=409,
+            content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
+                                  data={}, error="").model_dump())
     logger.info(f"Delete vehicle request for uuid: {vehicle_uuid}")
     result = await admin_vehicle_management_service.delete_vehicle(vehicle_uuid)
     return JSONResponse(
@@ -105,6 +118,12 @@ async def delete_vehicle_by_plate(
         return JSONResponse(
             status_code=401,
             content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    is_vehicle_on_route: bool = await validate_vehicle_state(plate_number=plate_number)
+    if is_vehicle_on_route:
+        return JSONResponse(
+            status_code=409,
+            content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
+                                  data={}, error="").model_dump())
     logger.info(f"Delete vehicle request for plate number: {plate_number}")
     result = await admin_vehicle_management_service.delete_vehicle_by_plate(plate_number)
     return JSONResponse(
@@ -126,6 +145,12 @@ async def assign_route(
         return JSONResponse(
             status_code=401,
             content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    is_vehicle_on_route: bool = await validate_vehicle_state(assignment.vehicle_uuid)
+    if is_vehicle_on_route:
+        return JSONResponse(
+            status_code=409,
+            content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
+                                  data={}, error="").model_dump())
     logger.info(f"Assign route request for vehicle: {assignment.vehicle_uuid}")
     result = await admin_vehicle_management_service.assign_route(
         assignment.vehicle_uuid,
@@ -150,6 +175,12 @@ async def delete_route(
         return JSONResponse(
             status_code=401,
             content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
+    is_vehicle_on_route: bool = await validate_vehicle_state(vehicle_uuid)
+    if is_vehicle_on_route:
+        return JSONResponse(
+            status_code=409,
+            content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
+                                  data={}, error="").model_dump())
     logger.info(f"Delete route request for vehicle: {vehicle_uuid}")
     result = await admin_vehicle_management_service.delete_route(vehicle_uuid)
     return JSONResponse(
