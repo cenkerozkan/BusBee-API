@@ -111,7 +111,7 @@ async def update_driver_phone_number(
             content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
                                   data={}, error="").model_dump())
     logger.info(f"Update driver phone number request for driver uid: {driver_data.uid}")
-    result: dict = admin_management_service.update_driver_phone_number(driver_data.uid, driver_data.new_phone_number)
+    result: dict = await admin_management_service.update_driver_phone_number(driver_data.uid, driver_data.new_phone_number)
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
