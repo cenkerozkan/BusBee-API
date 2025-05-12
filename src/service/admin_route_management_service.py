@@ -74,6 +74,7 @@ class AdminRouteManagementService:
         existing_route.updated_at = str(dt.datetime.now().isoformat())
         existing_route.stops = updated_route.stops
         existing_route.start_time = updated_route.start_time
+        existing_route.name = updated_route.name
         crud_result: dict = await self._route_repository.update_one(existing_route)
         result.update({"code": 200, "success": True, "message": crud_result.get("message"), "data": {"route": updated_route.model_dump()}} if crud_result.get("success") else {"code": 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
         return result
