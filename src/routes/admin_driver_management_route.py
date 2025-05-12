@@ -84,7 +84,7 @@ async def delete_driver(
             content=ResponseModel(success=False, message="Araç yolculuk yaparken değişiklik yapamazsınız",
                                   data={}, error="").model_dump())
     logger.info(f"Delete driver request for phone number: {driver_data.uid}")
-    result: bool = admin_management_service.delete_driver(driver_data.uid)
+    result: bool = await admin_management_service.delete_driver(driver_data.uid)
     return JSONResponse(
         status_code= 200 if result is True else 500,
         content=ResponseModel(

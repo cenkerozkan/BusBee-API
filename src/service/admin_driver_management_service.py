@@ -57,7 +57,7 @@ class AdminDriverManagementService:
             result.update({"code": 200, "success": True, "message": "Driver user added", "data": new_driver_user.model_dump()})
         return result
 
-    def delete_driver(
+    async def delete_driver(
             self,
             driver_uid: str
     ) -> bool:
@@ -73,7 +73,7 @@ class AdminDriverManagementService:
             return is_deleted
 
         if firebase_response:
-            is_deleted = asyncio.run(self._driver_user_repository.delete_one_by_uid(driver_uid))
+            is_deleted = await self._driver_user_repository.delete_one_by_uid(driver_uid)
 
         return is_deleted
 
