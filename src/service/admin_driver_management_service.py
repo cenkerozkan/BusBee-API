@@ -20,7 +20,7 @@ class AdminDriverManagementService:
         self._driver_user_repository = driver_user_repository
         self._vehicle_repository = vehicle_repository
 
-    def add_driver(
+    async def add_driver(
             self,
             driver_data: AddDriverUserModel
     ) -> dict:
@@ -50,7 +50,7 @@ class AdminDriverManagementService:
                 last_name=driver_data.last_name,
                 phone_number=driver_data.phone_number,
             )
-            is_saved = asyncio.run(self._driver_user_repository.insert_one(new_driver_user.model_dump()))
+            is_saved = await self._driver_user_repository.insert_one(new_driver_user.model_dump())
             if not is_saved:
                 result.update({"code": 500, "success": False, "message": "Failed to add driver user", "error": ""})
 
@@ -96,7 +96,7 @@ class AdminDriverManagementService:
             return result
 
         if firebase_response is True:
-            driver_user: DriverUserModel = asyncio.run(self._driver_user_repository.get_one_by_uid(driver_uid))
+            driver_user: DriverUserModel = await self._driver_user_repository.get_one_by_uid(driver_uid)
             driver_user.phone_number = new_phone_number
             is_updated = await self._driver_user_repository.update_one(driver_user)
 

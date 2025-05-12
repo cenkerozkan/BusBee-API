@@ -38,7 +38,7 @@ async def get_all_drivers(
     )
 
 @admin_driver_management_router.post("/add_driver", tags=["Admin Driver Management"])
-def add_driver(
+async def add_driver(
         driver_data: AddDriverUserModel,
         is_jwt_valid: bool = Depends(jwt_validator)
 ) -> JSONResponse:
@@ -57,7 +57,7 @@ def add_driver(
                 error=""
             ).model_dump()
         )
-    result: dict = admin_management_service.add_driver(driver_data)
+    result: dict = await admin_management_service.add_driver(driver_data)
     return JSONResponse(
         status_code=result.get("code"),
         content=ResponseModel(
