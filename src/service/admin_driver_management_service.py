@@ -77,7 +77,7 @@ class AdminDriverManagementService:
 
         return is_deleted
 
-    def update_driver_phone_number(
+    async def update_driver_phone_number(
             self,
             driver_uid: str,
             new_phone_number: str
@@ -98,7 +98,7 @@ class AdminDriverManagementService:
         if firebase_response is True:
             driver_user: DriverUserModel = asyncio.run(self._driver_user_repository.get_one_by_uid(driver_uid))
             driver_user.phone_number = new_phone_number
-            is_updated = asyncio.run(self._driver_user_repository.update_one(driver_user))
+            is_updated = await self._driver_user_repository.update_one(driver_user)
 
             if is_updated:
                 result.update({"code": 200, "success": True, "message": "Driver phone number updated", "data": driver_user.model_dump()})
