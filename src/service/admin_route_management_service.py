@@ -67,7 +67,7 @@ class AdminRouteManagementService:
     ) -> dict:
         self._logger.info(f"Updating route: {updated_route}")
         result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
-        existing_route: RouteModel = await self._route_repository.get_one_by_uuid(UpdateRouteModel.uuid)
+        existing_route: RouteModel = await self._route_repository.get_one_by_uuid(updated_route.uuid)
         if not existing_route:
             result.update({"code": 404, "success": False, "message": "Route does not exist"})
             return result
