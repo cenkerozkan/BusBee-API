@@ -994,8 +994,6 @@ Removes a vehicle from a driver.
 {
   "uuid": "string",
   "route_name": "string",
-  "created_at": "string",
-  "updated_at": "string",
   "start_time": "string",
   "stops": [
     {

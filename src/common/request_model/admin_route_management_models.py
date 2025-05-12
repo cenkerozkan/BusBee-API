@@ -11,7 +11,5 @@ class NewRoute(BaseModel):
 class UpdateRouteModel(BaseModel):
     uuid: str
     route_name: str
-    created_at: str
-    updated_at: str
     start_time: str
     stops: list[LatLonModel]
