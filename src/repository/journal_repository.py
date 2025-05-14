@@ -158,6 +158,17 @@ class JournalRepository(RepositoryBaseClass):
         except Exception as e:
             self._logger.error(f"Failed to get active journal: {e}")
             return None
+    async def get_active_one_by_uuid(
+            self,
+            journal_uuid: str
+    ) -> JournalModel | None:
+        self._logger.info(f"Getting active journal for journal_uuid: {journal_uuid}")
+        try:
+            journal = await self._collection.find_one({"journal_uuid": journal_uuid, "is_open": True})
+            return JournalModel(**journal) if journal else None
+        except Exception as e:
+            self._logger.error(f"Failed to get active journal: {e}")
+            return None
 
     async def is_vehicle_active(
             self,
@@ -180,6 +191,16 @@ class JournalRepository(RepositoryBaseClass):
         except Exception as e:
             self._logger.error(f"Failed to check vehicle state: {e}")
             return False
+
+    async def get_all_active_journeys(self) -> list[JournalModel]:
+        try:
+            journals: list[JournalModel] = []
+            async for journal in self._collection.find({"is_open": True}):
+                journals.append(JournalModel(**journal))
+            return journals
+        except Exception as e:
+            self._logger.error(f"Failed to get active journeys: {e}")
+            return []
 
 
 journal_repository = JournalRepository()

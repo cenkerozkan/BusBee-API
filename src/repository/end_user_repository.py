@@ -74,12 +74,32 @@ class EndUserRepository(RepositoryBaseClass):
             self._logger.error(f"Failed to get document: {e}")
             return None
 
+    async def get_one_by_uid(
+            self,
+            uid: str
+    ) -> EndUserModel | None:
+        self._logger.info(f"Getting user for uid: {uid}")
+        try:
+            user = await self._collection.find_one({"uid": uid})
+            return EndUserModel(**user)
+
+        except Exception as e:
+            self._logger.error(f"Failed to get document: {e}")
+            return None
 
     async def update_one(
             self,
-            document
-    ):
-        pass
+            document: EndUserModel
+    ) -> bool:
+        self._logger.info("Updating document")
+        try:
+            await self._collection.update_one({"uid": document["uid"]}, {"$set": document.model_dump()})
+
+        except Exception as e:
+            self._logger.error(f"Failed to update document: {e}")
+            return False
+
+        return True
 
     async def update_many(
             self,

@@ -1,21 +1,22 @@
 import datetime as dt
-import asyncio
 import uuid
 
+from ..common.db.model.driver_user_model import DriverUserModel
+from ..common.db.model.vehicle_model import VehicleModel
 from ..repository.route_repository import route_repository
 from ..repository.vehicle_repository import vehicle_repository
+from ..repository.driver_user_repository import driver_user_repository
 from ..common.util.logger import get_logger
-from ..common.util.error_messages import get_error_message
-from ..common.request_model.admin_route_management_models import *
 from ..common.db.model.route_model import RouteModel
 from ..common.request_model.admin_route_management_models import *
 
 class AdminRouteManagementService:
-    __slots__ = ("_logger", "_route_repository", "_vehicle_repository")
+    __slots__ = ("_logger", "_route_repository", "_vehicle_repository", "_driver_user_repository")
     def __init__(self):
         self._logger = get_logger(__name__)
         self._route_repository = route_repository
         self._vehicle_repository = vehicle_repository
+        self._driver_user_repository = driver_user_repository
 
     async def create_route(
             self,
@@ -33,31 +34,18 @@ class AdminRouteManagementService:
             route_id: str,
     ) -> dict:
         result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
-        vehicles = await self._vehicle_repository.get_by_route_uuid(route_id)
-        for vehicle in vehicles:
-            vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route_id]
-            await self._vehicle_repository.update_one(vehicle)
+        vehicle: VehicleModel = await self._vehicle_repository.get_one_by_route_uuid(route_id)
+        if vehicle:
+            vehicle.route_uuid = None
+            _: dict = await self._vehicle_repository.update_one(vehicle)
+        driver_user: DriverUserModel = await self._driver_user_repository.get_one_by_vehicle_route_uuid(route_id)
+        if driver_user:
+            driver_user.vehicle.route_uuid = None
+            _: dict = await self._driver_user_repository.update_one(driver_user)
         crud_result: dict = await self._route_repository.delete_one_by_uuid(route_id)
-        result.update({"code": 200, "success": True, "message": crud_result.get("message")} if crud_result.get("success") else {"code": 404 if crud_result.get("message") == "Route does not exist" else 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
-        return result
-
-    async def delete_route_by_name(
-            self,
-            route_name: str,
-    ) -> dict:
-        result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
-        route = await self._route_repository.get_one_by_name(route_name)
-        if not route:
-            result.update({"code": 404, "success": False, "message": "Route does not exist"})
-            return result
-        vehicles = await self._vehicle_repository.get_by_route_uuid(route.uuid)
-        for vehicle in vehicles:
-            vehicle.route_uuids = [uuid for uuid in vehicle.route_uuids if uuid != route.uuid]
-            await self._vehicle_repository.update_one(vehicle)
-        crud_result = await self._route_repository.delete_one_by_name(route_name)
         if not crud_result.get("success"):
-            result.update({"code": 404 if crud_result.get("message") == "Route does not exist" else 500, "success": False,
-             "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
+            result.update({"code": 500, "success": False, "message": crud_result.get("message"),})
+            return result
         result.update({"code": 200, "success": True, "message": crud_result.get("message")})
         return result
 
@@ -76,16 +64,22 @@ class AdminRouteManagementService:
         existing_route.start_time = updated_route.start_time
         existing_route.route_name = updated_route.route_name
         crud_result: dict = await self._route_repository.update_one(existing_route)
-        result.update({"code": 200, "success": True, "message": crud_result.get("message"), "data": {"route": updated_route.model_dump()}} if crud_result.get("success") else {"code": 500, "success": False, "message": crud_result.get("message"), "error": crud_result.get("error", "Unknown error occurred")})
+        if not crud_result.get("success"):
+            result.update({"code": 500, "success": False, "message": crud_result.get("message"),
+                           "error": crud_result.get("error", "Unknown error occurred")})
+        result.update({"code": 200, "success": True, "message": crud_result.get("message"),
+                       "data": {"route": updated_route.model_dump()}})
         return result
 
     async def get_all_routes(self) -> dict:
         self._logger.info("Getting all routes")
         result: dict = {"code": 0, "success": False, "message": "", "error": "", "data": {}}
         routes: list[RouteModel] = await self._route_repository.get_all()
-        for i in routes:
-            self._logger.info(f"Getting route: {i}")
-        result.update({"code": 200, "success": True, "message": "Routes retrieved successfully", "data": {"routes": [route.model_dump() for route in routes]}} if routes else {"code": 404, "success": False, "message": "No routes found", "data": {"routes": []}})
+        if not routes:
+            result.update({"code": 404, "success": False, "message": "No routes found", "data": {"routes": []}})
+            return result
+        result.update({"code": 200, "success": True, "message": "Routes retrieved successfully",
+                       "data": {"routes": [route.model_dump() for route in routes]}})
         return result
 
 admin_route_management_service = AdminRouteManagementService()

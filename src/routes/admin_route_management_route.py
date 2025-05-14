@@ -54,27 +54,6 @@ async def delete_route(
         ).model_dump()
     )
 
-@admin_route_management_router.delete("/delete_by_name/{route_name}", tags=["Admin Route Management"])
-async def delete_route_by_name(
-        route_name: str,
-        is_jwt_valid: bool = Depends(jwt_validator),
-) -> JSONResponse:
-    if not is_jwt_valid:
-        return JSONResponse(
-            status_code=401,
-            content=ResponseModel(success=False, message="Invalid JWT", data={},error="").model_dump())
-    logger.info(f"Delete route request for route name: {route_name}")
-    result: dict = await admin_route_management_service.delete_route_by_name(route_name)
-    return JSONResponse(
-        status_code=result.get("code"),
-        content=ResponseModel(
-            success=result.get("success"),
-            message=result.get("message"),
-            data=result.get("data"),
-            error=result.get("error")
-        ).model_dump()
-    )
-
 @admin_route_management_router.patch("/update", tags=["Admin Route Management"])
 async def update_route(
         route_data: UpdateRouteModel,

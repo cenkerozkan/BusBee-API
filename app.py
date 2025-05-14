@@ -20,6 +20,7 @@ from src.routes.admin_driver_management_route import admin_driver_management_rou
 from src.routes.admin_route_management_route import admin_route_management_router
 from src.routes.admin_vehicle_management_route import admin_vehicle_management_router
 from src.routes.driver_route import driver_router
+from src.routes.end_user_route import end_user_router
 
 load_dotenv()
 
@@ -84,3 +85,4 @@ app.include_router(admin_driver_management_router)
 app.include_router(admin_route_management_router)
 app.include_router(admin_vehicle_management_router)
 app.include_router(driver_router)
+app.include_router(end_user_router)

@@ -7,18 +7,6 @@ from ..common.db.model.route_model import RouteModel
 from ..common.db.model.lat_lon_model import LatLonModel
 
 class RouteRepository(RepositoryBaseClass):
-    """
-    This repository is responsible from models:
-        class RouteModel(BaseModel):
-            uuid: str
-            route_name: str
-            created_at: str
-            updated_at: str
-            start_time: str
-            driver_name: str
-            driver_number: str
-            stops: list[LatLonModel]
-    """
     def __init__(self):
         self._logger = get_logger(__name__)
         self._db = MongoDBConnector().client["bus_ops"]

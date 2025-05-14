@@ -1,5 +1,3 @@
-import asyncio
-
 from ..common.db.mongodb_connector import MongoDBConnector
 from ..common.base.repository_base_class import RepositoryBaseClass
 from ..common.util.logger import get_logger
@@ -155,6 +153,19 @@ class DriverUserRepository(RepositoryBaseClass):
             result.update({"success": False, "message": "Failed to extract document.", "error": str(e)})
 
         return result
+
+    async def get_one_by_vehicle_route_uuid(
+            self,
+            route_uuid: str
+    ) -> DriverUserModel | None:
+        self._logger.info(f"Getting user for route uuid: {route_uuid}")
+        try:
+            user = await self._collection.find_one({"vehicle.route_uuid": route_uuid})
+            return DriverUserModel(**user)
+
+        except Exception as e:
+            self._logger.error(f"Failed to get document: {e}")
+            return None
 
 
 driver_user_repository = DriverUserRepository()

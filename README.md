@@ -44,7 +44,6 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Create Route](#create-route)
   - [Update Route](#update-route)
   - [Delete Route With Route ID](#delete-route-with-route-id)
-  - [Delete Route With Route Name](#delete-route-with-route-name)
 - [Admin Vehicle Management Endpoints](#admin-vehicle-management-endpoints)
   - [Create Vehicle](#create-vehicle)
   - [Get All Vehicles](#get-all-vehicles)
@@ -58,6 +57,11 @@ POST https://busops-acb3c422b0e4.herokuapp.com/api/auth/end_user/login
   - [Start Journal](#start-journey)
   - [Stop Journey](#stop-journey)
   - [Websocket Location Updates](#websocket-location-updates)
+- [End User Endpoints](#end-user-endpoints)
+  - [Get Passenger Information](#get-passenger-information)
+  - [Get All Routes](#get-all-routes-for-passengers)
+  - [Get All Active Journeys](#get-all-active-journeys)
+  - [Fetch Location From Journal](#fetch-location-from-journal)
 
 ## Authentication Services
 
@@ -1098,41 +1102,6 @@ Removes a vehicle from a driver.
 }
 ```
 
-### Delete Route With Route Name
-`DELETE /api/admin/management/route/delete/{route_name}`
-
-**Parameters:**
-- `route_name`: UUID of the route to be deleted
-
-**Headers:**
-- `Authorization`: Bearer token
-
-**Success Response:**
-- Status: 200
-- Body: ResponseModel with success message
-
-**Success Response Example:**
-```json
-{
-  "success": true,
-  "message": "Route deleted successfully",
-  "data": {},
-  "error": ""
-}
-```
-**Error Response:**
-- 500: Failed to delete route
-- 404: Route not found
-
-**Error Response Example:**
-```json
-{
-  "success": false,
-  "message": "Route not found",
-  "data": {},
-  "error": ""
-}
-```
 ## Admin Vehicle Management Endpoints
 
 This section details endpoints for managing vehicles by administrators.
@@ -1817,5 +1786,213 @@ DRIVER-API-KEY: your-api-key-here
   "message": " ",
   "error": "",
   "data": null
+}
+```
+
+## End User Endpoints
+### Get Passenger Information
+`GET /api/passenger/get_passenger_information/{uid}`
+Retrieves information about the passenger.
+
+**Parameters:**
+- `uid`: UID of the passenger
+
+**Headers:**
+- `Authorization`: Bearer token (Passenger token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with passenger data
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Kullanıcı bilgileri başarıyla alındı",
+  "data": {
+    "email": "cenkerozkan99@gmail.com",
+    "first_name": "Cenker",
+    "last_name": "Özkan",
+    "saved_routes": []
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+- 404: Passenger not found
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "message": "Böyle bir kullanıcı bulunmamakta",
+  "data": null,
+  "error": ""
+}
+```
+
+### Get All Routes For Passengers
+`GET /api/passenger/get_all_routes`
+Retrieves all routes available for passengers.
+
+**Headers:**
+- `Authorization`: Bearer token (Passenger token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with list of routes
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Routes retrieved successfully",
+  "data": {
+    "routes": [
+      {
+        "uuid": "7625a95d-7af0-44fb-a0e9-40e7be03bd66",
+        "route_name": "Downtown Express",
+        "created_at": "2025-05-14T00:06:13.584341",
+        "updated_at": "2025-05-14T00:06:13.584349",
+        "start_time": "08:00",
+        "stops": [
+          {
+            "lat": 39.925533,
+            "lon": 32.866287
+          },
+          {
+            "lat": 39.9305,
+            "lon": 32.8552
+          },
+          {
+            "lat": 39.935678,
+            "lon": 32.844321
+          }
+        ]
+      }
+    ]
+  },
+  "error": ""
+}
+```
+```json
+{
+  "success": true,
+  "message": "Herhangi bir rota bulunmamakta",
+  "data": {
+    "routes": []
+  },
+  "error": ""
+}
+```
+
+**Error Response:**
+I did not plan any error response for this endpoint.
+If somehow you're getting an error? that means there is some serious
+problems with the Database.
+
+### Get All Active Journeys
+`GET /api/passenger/get_all_active_journeys`
+Retrieves all active journeys for the passenger.
+
+**Headers:**
+- `Authorization`: Bearer token (Passenger token required)
+
+**Success Response:**
+- Status: 200
+- Body: ResponseModel with list of active journeys
+
+**Success Response Example:**
+```json
+{
+  "success": true,
+  "message": "Aktif yolculuklar başarıyla alındı",
+  "data": {
+    "active_journeys": [
+      {
+        "journal_date": "14-05-2025",
+        "driver_name": "Cenker",
+        "driver_last_name": "Özkan",
+        "created_at": "2025-05-14T13:30:00.001701",
+        "updated_at": "2025-05-14T13:30:00.001706",
+        "journal_uuid": "324e765b-8954-45e4-a49c-3bd546e63422",
+        "journal_route": {
+          "uuid": "ceb8aed3-1b4f-4cb3-98d9-cd2e0eaff451",
+          "route_name": "Downtown Express",
+          "created_at": "2025-05-14T13:01:33.291780",
+          "updated_at": "2025-05-14T13:01:33.291794",
+          "start_time": "08:00",
+          "stops": [
+            {
+              "lat": 39.925533,
+              "lon": 32.866287
+            },
+            {
+              "lat": 39.9305,
+              "lon": 32.8552
+            },
+            {
+              "lat": 39.935678,
+              "lon": 32.844321
+            }
+          ]
+        },
+        "journal_vehicle": {
+          "uuid": "f5488f20-f1b1-4c5b-9c79-70daa1d3c19c",
+          "vehicle_brand": "Mercedes-Benz",
+          "vehicle_model": "Conecto",
+          "vehicle_year": 2022,
+          "plate_number": "34ABC123",
+          "route_uuid": "ceb8aed3-1b4f-4cb3-98d9-cd2e0eaff451"
+        },
+        "is_open": true,
+        "driver_uid": "HLAuyB1sGIVV9LuIw6WikOPqLZ42"
+      }
+    ]
+  },
+  "error": ""
+}
+```
+**Error Response:**
+I haven't planned any error response for this endpoint.
+If somehow you're getting an error? that means there is some serious
+problems with the Database.
+
+### Fetch Location From Journal
+`ws://busops-acb3c422b0e4.herokuapp.com/passenger/ws/fetch_vehicle_location`
+
+**Authentication** Include the API key in the request headers as this: PASSENGER-API-KEY: your-api-key-here
+**Payload String**
+```json
+{
+  "journal_uuid": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Success Response:**
+```json string
+{
+    "code": 200,
+    "success": true,
+    "message": "Konum başarıyla alındı",
+    "error": "",
+    "data": {
+        "current_location": {
+            "lat": 39.85957,
+            "lon": 32.785186,
+            "time": "2024-03-21T14:30:00"
+        }
+    }
+}
+```
+**Error Response:**
+```json string
+{
+    "code": 404,
+    "success": false,
+    "message": "Böyle bir yolculuk bulunmamakta",
+    "error": "",
+    "data": {}
 }
 ```

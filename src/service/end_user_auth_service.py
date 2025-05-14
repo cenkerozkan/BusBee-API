@@ -46,7 +46,7 @@ class EndUserAuthService:
             result.update({"code": response.get("error").get("code"), "success": False, "message": get_error_message(response.get("error").get("errors")[0].get("message"))})
         else:
             firebase_user_info: dict = self._firebase_handler.get_user_info(email)
-            user_info: EndUserModel = asyncio.run(self._end_user_repository.get_one_by_email(email))
+            user_info: EndUserModel = asyncio.run(self._end_user_repository.get_one(email))
             result.update({"code": 200, "success": True, "message": "Login successful", "refresh_token": response.get("refreshToken"), "id_token": response.get("idToken"), "data": user_info.model_dump()})
         return result
 

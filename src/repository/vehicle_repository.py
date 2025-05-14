@@ -185,6 +185,17 @@ class VehicleRepository(RepositoryBaseClass):
             self._logger.error(f"Failed to get vehicles by route UUID: {e}")
             return []
 
+    async def get_one_by_route_uuid(
+            self,
+            route_uuid: str
+    ) -> VehicleModel | None:
+        try:
+            vehicle = await self._collection.find_one({"route_uuid": route_uuid})
+            return VehicleModel(**vehicle) if vehicle else None
+        except Exception as e:
+            self._logger.error(f"Failed to get vehicle by route UUID: {e}")
+            return None
+
     async def insert_many(self, documents):
         raise NotImplementedError
 

@@ -16,7 +16,6 @@ async def validate_vehicle_state(
         is_vehicle_on_route = await journal_repository.is_vehicle_active(vehicle_uuid=vehicle_uuid)
     if plate_number is not None:
         is_vehicle_on_route = await journal_repository.is_vehicle_active(plate_number=plate_number)
-        pass
     if vehicle_uuid is None and driver_uid is None and plate_number is None:
         raise ValueError("Either vehicle_uuid or driver_uid must be provided, not both.")
     return is_vehicle_on_route
